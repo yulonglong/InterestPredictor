@@ -261,16 +261,23 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		Main t = new Main();
 		int set = 0;
+		
+		double[][] result = t.SVM_Early_Process(set);
+  		t.Evaluate_Early(result, 2, t.TRU.get(set));
+ 		t.Evaluate_Early(result, 4, t.TRU.get(set));
+ 		t.Evaluate_Early(result, 6, t.TRU.get(set));
+ 		t.Evaluate_Early(result, 8, t.TRU.get(set));
+ 		t.Evaluate_Early(result, 10, t.TRU.get(set));
 
-		 double[][] result1 = t.SVM_Late_Process(set, "fb");
-		 double[][] result2 = t.SVM_Late_Process(set, "quora");
-		 double[][] result3 = t.SVM_Late_Process(set, "twit");
-		 System.out.println("set " + set);
-		 t.Evaluate_Late2(result1, result2, result3, 2, t.TRU.get(set));
-		 t.Evaluate_Late2(result1, result2, result3, 4, t.TRU.get(set));
-		 t.Evaluate_Late2(result1, result2, result3, 6, t.TRU.get(set));
-		 t.Evaluate_Late2(result1, result2, result3, 8, t.TRU.get(set));
-		 t.Evaluate_Late2(result1, result2, result3, 10, t.TRU.get(set));
+//		 double[][] result1 = t.SVM_Late_Process(set, "fb");
+//		 double[][] result2 = t.SVM_Late_Process(set, "quora");
+//		 double[][] result3 = t.SVM_Late_Process(set, "twit");
+//		 System.out.println("set " + set);
+//		 t.Evaluate_Late2(result1, result2, result3, 2, t.TRU.get(set));
+//		 t.Evaluate_Late2(result1, result2, result3, 4, t.TRU.get(set));
+//		 t.Evaluate_Late2(result1, result2, result3, 6, t.TRU.get(set));
+//		 t.Evaluate_Late2(result1, result2, result3, 8, t.TRU.get(set));
+//		 t.Evaluate_Late2(result1, result2, result3, 10, t.TRU.get(set));
 	}
 }
 
