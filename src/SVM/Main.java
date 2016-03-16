@@ -18,11 +18,12 @@ import Utility.IO;
 import Utility.Ranking;
 
 public class Main {
-	String fold = "SVM_Data/";
+	String relativePath = "SVM_Data/";
+	int numLabels = 20;
 	ArrayList<Hashtable<Integer, Boolean>> TRU = new ArrayList<Hashtable<Integer, Boolean>>();
 
 	public Main() {
-		double[][] gnd_valid = TTest.ReadMx(this.fold + "gnd_test.csv");
+		double[][] gnd_valid = TTest.ReadMx(this.relativePath + "gnd_test.csv");
 		for (int n = 0; n < gnd_valid.length; n++) {
 			Hashtable<Integer, Boolean> intrest = new Hashtable<Integer, Boolean>();
 			for (int r = 0; r < gnd_valid[0].length; r++) {
@@ -34,47 +35,73 @@ public class Main {
 	}
 
 	public double[][] SVM_Late_Process(String source) throws IOException {
-		String fold = this.fold;
-		svm_node[][] X = loadX(fold + source + "_train.csv");
-		double[] Y = loadY(fold + "gnd_train.csv");
-		svm_node[][] X_test = loadX(fold + source + "_test.csv");
-
-		svm_problem problem = new svm_problem();
-		problem.l = X.length;
-		problem.x = X;
-		problem.y = Y; 
+		String relativePath = this.relativePath;
+		svm_node[][] X = loadX(relativePath + source + "_train.csv");
+		double[][] Y = loadY(relativePath + "gnd_train.csv");
+		svm_node[][] X_test = loadX(relativePath + source + "_test.csv");
 
 		
-		svm_parameter param = new svm_parameter();
-		param.svm_type = svm_parameter.C_SVC;
-		param.kernel_type = svm_parameter.RBF;
-		param.degree = 3;
-		param.gamma = 0; 
-		param.nu = 0.5;
-		param.cache_size = 100;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
-		param.shrinking = 1;
-		param.probability = 1;
-		param.nr_weight = 0;
-		param.weight_label = new int[0];
-		param.weight = new double[0];
-
-		System.out.println(svm.svm_check_parameter(problem, param)); 
-		svm_model model = svm.svm_train(problem, param); 
-		double[][] prob = Evaluate_Late1(model, X_test);
-		return prob;
+		double[][] score = new double[X_test.length][numLabels];
+			
+		for(int i = 0;i<numLabels;i++){
+			//	Get the binary class for each label (out of the 20 label)
+			double[] currY = new double[X.length];
+			for(int j=0;j<X.length;j++){
+				currY[j] = Y[j][i];
+			}
+	
+		svm_problem problem = new svm_problem();
+			problem.l = X.length;
+			problem.x = X;
+			problem.y = currY; 
+	
+			
+			svm_parameter param = new svm_parameter();
+			param.svm_type = svm_parameter.C_SVC;
+			param.kernel_type = svm_parameter.RBF;
+			param.degree = 3;
+			param.gamma = 1; 
+			param.nu = 0.5;
+			param.cache_size = 100;
+			param.C = 1;
+			param.eps = 1e-3;
+			param.p = 0.1;
+			param.shrinking = 1;
+			param.probability = 1;
+			param.nr_weight = 0;
+			param.weight_label = new int[0];
+			param.weight = new double[0];
+	
+	//		System.out.println(svm.svm_check_parameter(problem, param)); 
+			svm_model model = svm.svm_train(problem, param); 
+			double[][] currProbTest = Evaluate_Late1(model, X_test);
+			
+			System.out.println("currProbTest "+currProbTest.length);
+			for(int j=0;j<X_test.length;j++){
+				score[j][i] += currProbTest[j][1];
+			}
+		}
+		return score;
+		
 	}
 
 	public double[][] Evaluate_Late1(svm_model model, svm_node[][] X) {
 		double[][] prob = new double[X.length][];
 		int n_label = svm.svm_get_nr_sv(model);
+//		System.out.println("SVM Label "+n_label);
 		int[] label = new int[n_label];
 		for (int i = 0; i < X.length; i++) {
 			double[] probi = new double[n_label];
+//			System.out.println("Test row");
+//			for(int j=0;j<X[i].length;j++){
+//				System.out.print(X[i][j].value +",");
+//			}
+//			System.out.println();
 			svm.svm_predict_probability(model, X[i], probi);
 			prob[i] = probi;
+//			System.out.println("Probability");
+//			System.out.println(Arrays.toString(probi));
+			
 		}
 		return prob;
 	}
@@ -150,45 +177,62 @@ public class Main {
 	}
 
 	public double[][] SVM_Early_Process() throws IOException {
-		String fold = this.fold;
-		svm_node[][] X1 = loadX(fold + "fb_train.csv");
-		svm_node[][] X2 = loadX(fold + "linkedin_train.csv");
-		svm_node[][] X3 = loadX(fold + "twitter_train.csv");
-		double[] Y = loadY(fold + "gnd_train.csv");
-		svm_node[][] X1_test = loadX(fold + "fb_test.csv");
-		svm_node[][] X2_test = loadX(fold + "linkedin_test.csv");
-		svm_node[][] X3_test = loadX(fold + "twitter_test.csv");
+		svm_node[][] X1 = loadX(relativePath + "fb_train.csv");
+		svm_node[][] X2 = loadX(relativePath + "linkedin_train.csv");
+		svm_node[][] X3 = loadX(relativePath + "twitter_train.csv");
+		double[][] Y = loadY(relativePath + "gnd_train.csv");
+		svm_node[][] X1_test = loadX(relativePath + "fb_test.csv");
+		svm_node[][] X2_test = loadX(relativePath + "linkedin_test.csv");
+		svm_node[][] X3_test = loadX(relativePath + "twitter_test.csv");
 		svm_node[][] X = MergeX(X1, X2);
 		X = MergeX(X, X3);
 		svm_node[][] X_test = MergeX(X1_test, X2_test);
 		X_test = MergeX(X_test, X3_test);
-
-		svm_problem problem = new svm_problem();
-		problem.l = X.length; 
-		problem.x = X; 
-		problem.y = Y; 
-
-		svm_parameter param = new svm_parameter();
-		param.svm_type = svm_parameter.C_SVC;
-		param.kernel_type = svm_parameter.RBF;
-		param.degree = 3;
-		param.gamma = 0; 
-		param.coef0 = 0;
-		param.nu = 0.5;
-		param.cache_size = 100;
-		param.C = 1;
-		param.eps = 1e-3;
-		param.p = 0.1;
-		param.shrinking = 1;
-		param.probability = 1;
-		param.nr_weight = 0;
-		param.weight_label = new int[0];
-		param.weight = new double[0];
-
-		System.out.println(svm.svm_check_parameter(problem, param)); 
-		svm_model model = svm.svm_train(problem, param); 
-		double[][] prob = Evaluate_Late1(model, X_test);
-		return prob;
+		
+		double[][] score = new double[X_test.length][numLabels];
+		
+		for(int i = 0;i<numLabels;i++){
+			// Get the binary class for each label (out of the 20 label)
+			double[] currY = new double[X.length];
+			for(int j=0;j<X.length;j++){
+				currY[j] = Y[j][i];
+			}
+//			
+//			System.out.println(Arrays.toString(currY));
+			
+			svm_problem problem = new svm_problem();
+			problem.l = X.length; 
+			problem.x = X; 
+			problem.y = currY; 
+	
+			svm_parameter param = new svm_parameter();
+			param.svm_type = svm_parameter.C_SVC;
+			param.kernel_type = svm_parameter.RBF;
+			param.degree = 3;
+			param.gamma = 1; 
+			param.coef0 = 0;
+			param.nu = 0.5;
+			param.cache_size = 100;
+			param.C = 1;
+			param.eps = 1e-3;
+			param.p = 0.1;
+			param.shrinking = 1;
+			param.probability = 1;
+			param.nr_weight = 0;
+			param.weight_label = new int[0];
+			param.weight = new double[0];
+	
+			System.out.println(svm.svm_check_parameter(problem, param)); 
+			svm_model model = svm.svm_train(problem, param); 
+			double[][] currProbTest = Evaluate_Late1(model, X_test);
+			
+//			System.out.println("currProbTest "+currProbTest.length);
+			for(int j=0;j<X_test.length;j++){
+				score[j][i] += currProbTest[j][1];
+			}
+		}
+		return score;
+		
 	}
 
 	public svm_node[][] loadX(String path) throws IOException {
@@ -231,31 +275,33 @@ public class Main {
 		return X;
 	}
 	
-	public double[] loadY(String path) throws IOException {
-		ArrayList<String> content = IO.FileLoad(path);
-		String line = content.get(0);
-		String[] terms = line.split(",");
-		double[] Y = new double[terms.length];
-		for (int i = 0; i < terms.length; i++) {
-			Y[i] = Double.valueOf(terms[i]);
-		}
-		return Y;
-	}
-
-//	public double[][] loadY(String path) throws IOException {
+//	public double[] loadY(String path) throws IOException {
 //		ArrayList<String> content = IO.FileLoad(path);
-//		double[][] Y = new double[content.size()][];
-//		for (int i = 0; i < content.size(); i++) {
-//			String line = content.get(0);
-//			String[] terms = line.split(",");
-//			double[] Yi = new double[terms.length];
-//			for (int j = 0; j < terms.length; j++) {
-//				Yi[j] = Double.valueOf(terms[i]);
-//			}
-//			Y[i] = Yi;
+//		String line = content.get(0);
+//		String[] terms = line.split(",");
+//		double[] Y = new double[terms.length];
+//		for (int i = 0; i < terms.length; i++) {
+//			Y[i] = Double.valueOf(terms[i]);
 //		}
 //		return Y;
 //	}
+
+	public double[][] loadY(String path) throws IOException {
+//		System.out.println("Test File");
+		ArrayList<String> content = IO.FileLoad(path);
+		double[][] Y = new double[content.size()][];
+		for (int i = 0; i < content.size(); i++) {
+			String line = content.get(i);
+			String[] terms = line.split(",");
+			double[] Yi = new double[terms.length];
+			for (int j = 0; j < terms.length; j++) {
+				Yi[j] = Double.valueOf(terms[j]);
+			}
+			Y[i] = Yi;
+//			System.out.println(Arrays.toString(Y[i]));
+		}
+		return Y;
+	}
 
 	public static void main(String[] args) throws IOException {
 		Main t = new Main();
