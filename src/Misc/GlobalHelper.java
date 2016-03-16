@@ -8,4 +8,6 @@ public class GlobalHelper {
 	public static final String pathToTrainLinkedIn = "./dataset/Train/LinkedIn";
 	public static final String pathToTrainTwitter = "./dataset/Train/Twitter";
 	public static final String pathToTrainGroundTruth = "./dataset/Train/GroundTruth";
+	public static final int numTraining = 420;
+	public static final int numTest = 150;
 }

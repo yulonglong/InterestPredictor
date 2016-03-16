@@ -17,6 +17,8 @@ import Jama.Matrix;
 import Utility.IO;
 import Utility.Ranking;
 
+import Wrapper.Tweet;
+
 public class Main {
 	String relativePath = "SVM_Data/";
 	int numLabels = 20;
@@ -304,20 +306,28 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Main t = new Main();
+		ArrayList<ArrayList<Tweet>> userTweetList = Misc.Main.readFromTwitterFile("train");
+		for(int i=0;i<userTweetList.size();i++){
+			for(int j=0;j<userTweetList.get(i).size();j++){
+				System.out.println(userTweetList.get(i).get(j).toString());
+			}
+		}
+		System.out.println("Number of users : "+userTweetList.size());
 		
-		double[][] result = t.SVM_Early_Process();
-  		t.Evaluate_Early(result, 2, t.TRU);
- 		t.Evaluate_Early(result, 6, t.TRU);
- 		t.Evaluate_Early(result, 10, t.TRU);
-
-		 double[][] fbResult = t.SVM_Late_Process("fb");
-		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-		 double[][] twitterResult = t.SVM_Late_Process("twitter");
-		 
-		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);
-		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 6, t.TRU);
-		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 10, t.TRU);
+//		Main t = new Main();
+//		
+//		double[][] result = t.SVM_Early_Process();
+//  		t.Evaluate_Early(result, 2, t.TRU);
+// 		t.Evaluate_Early(result, 6, t.TRU);
+// 		t.Evaluate_Early(result, 10, t.TRU);
+//
+//		 double[][] fbResult = t.SVM_Late_Process("fb");
+//		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+//		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+//		 
+//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);
+//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 6, t.TRU);
+//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 10, t.TRU);
 	}
 }
 

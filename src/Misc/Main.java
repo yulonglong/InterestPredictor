@@ -3,6 +3,7 @@ package Misc;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.json.JsonArray;
 
@@ -17,7 +18,7 @@ public class Main {
 //		for (int i = 0; i < 10; i++) {
 //			Process(T, i);
 //		 }
-		readFromTwitterFile();
+		readFromTwitterFile("test");
 	}
 
 	private static void Process(double[][] fb, double[][] twit, double[][] quora, double[][] twit_top, double[][] gnd,
@@ -35,15 +36,33 @@ public class Main {
 		double value = md.TrainingProcess();
 	}
 	
-	public static ArrayList<Tweet> readFromTwitterFile() {
-		File twitterTestFolder = new File(GlobalHelper.pathToTestTwitter); 
-		ArrayList<Tweet> tweetList = new ArrayList<Tweet>();
+	//	ArrayList of tweet, associated with a user
+	public static ArrayList<ArrayList<Tweet>> readFromTwitterFile(String type) {
 		
-		for (File fileEntry: twitterTestFolder.listFiles()) {
-			// directory contains the profileID
+		String twitterFolder = null;
+		int numRecords = 0;
+		int offset = 0;
+		if (type.equals("train")) {
+			twitterFolder = GlobalHelper.pathToTrainTwitter;
+			numRecords = GlobalHelper.numTraining;
+			offset = 1;
+		}
+		else {
+			twitterFolder = GlobalHelper.pathToTestTwitter;
+			numRecords = GlobalHelper.numTest;
+			offset = GlobalHelper.numTraining+1;
+		}
+		
+		ArrayList<ArrayList<Tweet>> userTweetList = new ArrayList<ArrayList<Tweet>>();
+		for(int userId=0;userId<numRecords;userId++) {
+			File fileEntry = new File(twitterFolder+"\\U"+Integer.toString(userId+offset));
+			String profileIdDir = fileEntry.toString();
+			String profileId = profileIdDir.substring(profileIdDir.lastIndexOf('\\') + 1);
+			
+			ArrayList<Tweet> tweetList = new ArrayList<Tweet>();
+			
 			if (fileEntry.isDirectory()) {
-				String profileIdDir = fileEntry.toString();
-				String profileId = profileIdDir.substring(profileIdDir.lastIndexOf('\\') + 1);
+				System.out.println(profileIdDir + " " + profileId);
 				for (File twitterJson: fileEntry.listFiles()) {
 					String twitterJsonDir = twitterJson.toString();
 					JsonArray tweetJsonArray = null;
@@ -65,9 +84,11 @@ public class Main {
 						}
 					}
 				}
+				
+				userTweetList.add(tweetList);
 			}
 		}
 		System.out.println("===============FINISH READING TWITTER FILES===============");
-		return tweetList;
+		return userTweetList;
 	}
 }

@@ -86,6 +86,7 @@ public class Tweet {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append(profileId + "\t");
 		sb.append("\""+text+"\"");
 		return sb.toString();
 	}
