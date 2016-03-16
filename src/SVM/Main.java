@@ -19,37 +19,25 @@ import Utility.Ranking;
 
 public class Main {
 	String fold = "SVM_Data/";
-	ArrayList<ArrayList<Hashtable<Integer, Boolean>>> TRU = new ArrayList<ArrayList<Hashtable<Integer, Boolean>>>();
+	ArrayList<Hashtable<Integer, Boolean>> TRU = new ArrayList<Hashtable<Integer, Boolean>>();
 
 	public Main() {
-//		for (int k = 0; k < 10; k++) {
-		int k = 0;
-			ArrayList<Hashtable<Integer, Boolean>> truth = new ArrayList<Hashtable<Integer, Boolean>>();
-			double[][] gnd_valid = TTest.ReadMx(this.fold + "gnd_valid_" + k + ".csv");
-			for (int n = 0; n < gnd_valid.length; n++) {
-				Hashtable<Integer, Boolean> intrest = new Hashtable<Integer, Boolean>();
-				for (int r = 0; r < gnd_valid[0].length; r++) {
-					if (gnd_valid[n][r] == 1)
-						intrest.put(r, true);
-				}
-				truth.add(intrest);
+		double[][] gnd_valid = TTest.ReadMx(this.fold + "gnd_test.csv");
+		for (int n = 0; n < gnd_valid.length; n++) {
+			Hashtable<Integer, Boolean> intrest = new Hashtable<Integer, Boolean>();
+			for (int r = 0; r < gnd_valid[0].length; r++) {
+				if (gnd_valid[n][r] == 1)
+					intrest.put(r, true);
 			}
-			this.TRU.add(truth);
-//		}
+			TRU.add(intrest);
+		}
 	}
 
-	public double[][] SVM_Late_Process(int k, String source) throws IOException {
+	public double[][] SVM_Late_Process(String source) throws IOException {
 		String fold = this.fold;
-		svm_node[][] X = loadX(fold + source + "_train_" + k + "_new.csv");
-		double[] Y = loadY(fold + "gnd_train_" + k + "_new.csv");
-		svm_node[][] X_test = loadX(fold + source + "_valid_" + k + ".csv");
-
-		if (source.equals("twit")) {
-			svm_node[][] X2 = loadX(fold + "twit_top_train_" + k + "_new.csv");
-			svm_node[][] X2_test = loadX(fold + "twit_top_valid_" + k + ".csv");
-			X = MergeX(X, X2);
-			X_test = MergeX(X_test, X2_test);
-		}
+		svm_node[][] X = loadX(fold + source + "_train.csv");
+		double[] Y = loadY(fold + "gnd_train.csv");
+		svm_node[][] X_test = loadX(fold + source + "_test.csv");
 
 		svm_problem problem = new svm_problem();
 		problem.l = X.length;
@@ -161,23 +149,19 @@ public class Main {
 		System.out.println("S@" + k + "\t" + v.sk);
 	}
 
-	public double[][] SVM_Early_Process(int k) throws IOException {
+	public double[][] SVM_Early_Process() throws IOException {
 		String fold = this.fold;
-		svm_node[][] X1 = loadX(fold + "fb_train_" + k + "_new.csv");
-		svm_node[][] X2 = loadX(fold + "quora_train_" + k + "_new.csv");
-		svm_node[][] X3 = loadX(fold + "twit_train_" + k + "_new.csv");
-		svm_node[][] X4 = loadX(fold + "twit_top_train_" + k + "_new.csv");
-		double[] Y = loadY(fold + "gnd_train_" + k + "_new.csv");
-		svm_node[][] X1_test = loadX(fold + "fb_valid_" + k + ".csv");
-		svm_node[][] X2_test = loadX(fold + "quora_valid_" + k + ".csv");
-		svm_node[][] X3_test = loadX(fold + "twit_valid_" + k + ".csv");
-		svm_node[][] X4_test = loadX(fold + "twit_top_valid_" + k + ".csv");
+		svm_node[][] X1 = loadX(fold + "fb_train.csv");
+		svm_node[][] X2 = loadX(fold + "linkedin_train.csv");
+		svm_node[][] X3 = loadX(fold + "twitter_train.csv");
+		double[] Y = loadY(fold + "gnd_train.csv");
+		svm_node[][] X1_test = loadX(fold + "fb_test.csv");
+		svm_node[][] X2_test = loadX(fold + "linkedin_test.csv");
+		svm_node[][] X3_test = loadX(fold + "twitter_test.csv");
 		svm_node[][] X = MergeX(X1, X2);
 		X = MergeX(X, X3);
-		X = MergeX(X, X4);
 		svm_node[][] X_test = MergeX(X1_test, X2_test);
 		X_test = MergeX(X_test, X3_test);
-		X_test = MergeX(X_test, X4_test);
 
 		svm_problem problem = new svm_problem();
 		problem.l = X.length; 
@@ -246,7 +230,7 @@ public class Main {
 		}
 		return X;
 	}
-
+	
 	public double[] loadY(String path) throws IOException {
 		ArrayList<String> content = IO.FileLoad(path);
 		String line = content.get(0);
@@ -258,26 +242,36 @@ public class Main {
 		return Y;
 	}
 
+//	public double[][] loadY(String path) throws IOException {
+//		ArrayList<String> content = IO.FileLoad(path);
+//		double[][] Y = new double[content.size()][];
+//		for (int i = 0; i < content.size(); i++) {
+//			String line = content.get(0);
+//			String[] terms = line.split(",");
+//			double[] Yi = new double[terms.length];
+//			for (int j = 0; j < terms.length; j++) {
+//				Yi[j] = Double.valueOf(terms[i]);
+//			}
+//			Y[i] = Yi;
+//		}
+//		return Y;
+//	}
+
 	public static void main(String[] args) throws IOException {
 		Main t = new Main();
-		int set = 0;
 		
-		double[][] result = t.SVM_Early_Process(set);
-  		t.Evaluate_Early(result, 2, t.TRU.get(set));
- 		t.Evaluate_Early(result, 4, t.TRU.get(set));
- 		t.Evaluate_Early(result, 6, t.TRU.get(set));
- 		t.Evaluate_Early(result, 8, t.TRU.get(set));
- 		t.Evaluate_Early(result, 10, t.TRU.get(set));
+		double[][] result = t.SVM_Early_Process();
+  		t.Evaluate_Early(result, 2, t.TRU);
+ 		t.Evaluate_Early(result, 6, t.TRU);
+ 		t.Evaluate_Early(result, 10, t.TRU);
 
-//		 double[][] result1 = t.SVM_Late_Process(set, "fb");
-//		 double[][] result2 = t.SVM_Late_Process(set, "quora");
-//		 double[][] result3 = t.SVM_Late_Process(set, "twit");
-//		 System.out.println("set " + set);
-//		 t.Evaluate_Late2(result1, result2, result3, 2, t.TRU.get(set));
-//		 t.Evaluate_Late2(result1, result2, result3, 4, t.TRU.get(set));
-//		 t.Evaluate_Late2(result1, result2, result3, 6, t.TRU.get(set));
-//		 t.Evaluate_Late2(result1, result2, result3, 8, t.TRU.get(set));
-//		 t.Evaluate_Late2(result1, result2, result3, 10, t.TRU.get(set));
+		 double[][] fbResult = t.SVM_Late_Process("fb");
+		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+		 
+		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);
+		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 6, t.TRU);
+		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 10, t.TRU);
 	}
 }
 
