@@ -18,6 +18,7 @@ import javax.json.JsonArray;
 
 import Jama.Matrix;
 import Utility.JsonFileReader;
+import Wrapper.Facebook;
 import Wrapper.LinkedIn;
 import Wrapper.Tweet;
 
@@ -25,7 +26,8 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		readFromTwitterFile("test");
-		readFromLinkedInFile("test");
+//		readFromLinkedInFile("test");
+		readFromFacebookFile("test");
 	}
 
 	public static void processText(String source) {
@@ -271,5 +273,33 @@ public class Main {
 		}
 		System.out.println("===============FINISH READING LINKEDIN FILES===============");
 		return linkedinList;
+	}
+	
+	public static ArrayList<Facebook> readFromFacebookFile(String type) {
+		String facebookFolder = null;
+		int numRecords = 0;
+		int offset = 0;
+		if (type.equals("train")) {
+			facebookFolder = GlobalHelper.pathToTrainFacebook;
+			numRecords = GlobalHelper.numTraining;
+			offset = 1;
+		}
+		else {
+			facebookFolder = GlobalHelper.pathToTestFacebook;
+			numRecords = GlobalHelper.numTest;
+			offset = GlobalHelper.numTraining+1;
+		}
+		
+		ArrayList<Facebook> facebookList = new ArrayList<Facebook>();
+		for(int userId=0;userId<numRecords;userId++) {
+			File fileEntry = new File(facebookFolder+"\\U"+Integer.toString(userId+offset));
+			String profileIdDir = fileEntry.toString();
+			String profileId = profileIdDir.substring(profileIdDir.lastIndexOf('\\') + 1);
+			
+			Facebook data = new Facebook(profileId, facebookFolder);
+			facebookList.add(data);
+		}
+		System.out.println("===============FINISH READING FACEBOOK FILES===============");
+		return facebookList;
 	}
 }
