@@ -18,6 +18,7 @@ public class GlobalHelper {
 	public static final String pathToProcessed = "./dataset/Processed";
 	public static final String pathToProcessedTwitter = "./dataset/Processed/Twitter";
 	public static final String pathToProcessedLinkedIn = "./dataset/Processed/LinkedIn";
+	public static final String pathToProcessedFacebook = "./dataset/Processed/Facebook";
 	public static final String pathToSVMData = "./dataset/Processed/SVM_Data";
 	
 	public static final int numTopicsLDA = 40;

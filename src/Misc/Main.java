@@ -24,11 +24,11 @@ import Wrapper.Tweet;
 
 public class Main {
 	
-	public static void main(String[] args) throws IOException {
-		readFromTwitterFile("test");
+//	public static void main(String[] args) throws IOException {
+//		readFromTwitterFile("test");
 //		readFromLinkedInFile("test");
-		readFromFacebookFile("test");
-	}
+//		readFromFacebookFile("test");
+//	}
 
 	public static void processText(String source) {
 		// Train the CRF and get Model File
@@ -102,6 +102,24 @@ public class Main {
 		System.err.println("Topic Modelling Completed!");
 		
 		writeTrainAndTest("linkedin");
+	}
+	
+	public static void processFacebook() {
+		ArrayList<Facebook> fbList = readFromFacebookFile("train");
+		ArrayList<Facebook> fbListTest = readFromFacebookFile("test");
+		for(int i=0;i<fbListTest.size();i++) {
+			fbList.add(fbListTest.get(i));
+		}
+		writeFromFacebookObject(fbListTest);
+		
+		System.err.println("Pre-processing Facebook Text for LDA....");
+		processText("facebook");
+		System.err.println("Running Topic Modelling (LDA)..");
+		System.err.println("Please wait patiently, it will take a while...");
+		runLDA("facebook",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
+		System.err.println("Topic Modelling Completed!");
+		
+		writeTrainAndTest("facebook");
 	}
 	
 	public static void writeTrainAndTest(String source) {		
@@ -275,6 +293,17 @@ public class Main {
 		return linkedinList;
 	}
 	
+	public static void writeFromFacebookObject(ArrayList<Facebook> fbList) {
+		for(int i=0;i<fbList.size();i++) {
+			PrintWriter pw = null;
+			try{ pw = new PrintWriter(GlobalHelper.pathToProcessedFacebook+"/"+(i+1)+".txt");}
+			catch (Exception e) { e.printStackTrace(); }
+			pw.println(fbList.get(i).getText());
+			pw.flush();
+			pw.close();
+		}
+	}
+	
 	public static ArrayList<Facebook> readFromFacebookFile(String type) {
 		String facebookFolder = null;
 		int numRecords = 0;
@@ -295,7 +324,7 @@ public class Main {
 			File fileEntry = new File(facebookFolder+"\\U"+Integer.toString(userId+offset));
 			String profileIdDir = fileEntry.toString();
 			String profileId = profileIdDir.substring(profileIdDir.lastIndexOf('\\') + 1);
-			
+			System.out.println(profileIdDir + " " + profileId);
 			Facebook data = new Facebook(profileId, facebookFolder);
 			facebookList.add(data);
 		}

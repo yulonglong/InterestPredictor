@@ -49,7 +49,7 @@ public class LinkedIn {
 		for(int i=0;i<honors.size();i++) sb.append(honors.get(i)+"\n");
 		for(int i=0;i<organisations.size();i++) sb.append(organisations.get(i)+"\n");
 		for(int i=0;i<interests.size();i++) sb.append(interests.get(i)+"\n");
-		return sb.toString();
+		return sb.toString().replaceAll("null\n", "");
 	}
 
 	private void processLinkedinHtml() {

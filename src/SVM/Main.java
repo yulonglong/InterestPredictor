@@ -297,7 +297,8 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 //		Misc.Main.processTwitter();
-		Misc.Main.processLinkedIn();
+//		Misc.Main.processLinkedIn();
+		Misc.Main.processFacebook();
 		
 		Main t = new Main();
 		
@@ -306,11 +307,14 @@ public class Main {
 // 		t.Evaluate_Early(result, 6, t.TRU);
 // 		t.Evaluate_Early(result, 10, t.TRU);
 
-//		 double[][] fbResult = t.SVM_Late_Process("fb");
-		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+		 double[][] fbResult = t.SVM_Late_Process("facebook");
 		 for(int i=1;i<=10;i++) {
-			t.Evaluate_Early(linkedinResult, i, t.TRU);
+			t.Evaluate_Early(fbResult, i, t.TRU);
 		 }
+//		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+//		 for(int i=1;i<=10;i++) {
+//			t.Evaluate_Early(linkedinResult, i, t.TRU);
+//		 }
 //		 double[][] twitterResult = t.SVM_Late_Process("twitter");
 //		 for(int i=1;i<=10;i++) {
 //			t.Evaluate_Early(twitterResult, i, t.TRU);

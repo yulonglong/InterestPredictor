@@ -16,6 +16,10 @@ public class Facebook {
 		facebookFolder = _facebookFolder;
 		this.processFacebookTxt();
 	}
+	
+	public String getText() {
+		return text;
+	}
 
 	private void processFacebookTxt() {
 		File input = new File(facebookFolder + "/" + profileId + ".txt");
