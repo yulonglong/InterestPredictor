@@ -277,17 +277,6 @@ public class Main {
 		}
 		return X;
 	}
-	
-//	public double[] loadY(String path) throws IOException {
-//		ArrayList<String> content = IO.FileLoad(path);
-//		String line = content.get(0);
-//		String[] terms = line.split(",");
-//		double[] Y = new double[terms.length];
-//		for (int i = 0; i < terms.length; i++) {
-//			Y[i] = Double.valueOf(terms[i]);
-//		}
-//		return Y;
-//	}
 
 	public double[][] loadY(String path) throws IOException {
 //		System.out.println("Test File");
@@ -307,7 +296,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Misc.Main.processTwitter();
+//		Misc.Main.processTwitter();
+		Misc.Main.processLinkedIn();
 		
 		Main t = new Main();
 		
@@ -317,10 +307,14 @@ public class Main {
 // 		t.Evaluate_Early(result, 10, t.TRU);
 
 //		 double[][] fbResult = t.SVM_Late_Process("fb");
-//		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-		 double[][] twitterResult = t.SVM_Late_Process("twitter");
-		 t.Evaluate_Early(twitterResult, 6, t.TRU);
-		 t.Evaluate_Early(twitterResult, 10, t.TRU);
+		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+		 for(int i=1;i<=10;i++) {
+			t.Evaluate_Early(linkedinResult, i, t.TRU);
+		 }
+//		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+//		 for(int i=1;i<=10;i++) {
+//			t.Evaluate_Early(twitterResult, i, t.TRU);
+//		 }
 		 
 //		 
 //		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);

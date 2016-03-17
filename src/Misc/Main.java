@@ -24,29 +24,10 @@ import Wrapper.Tweet;
 public class Main {
 	
 	public static void main(String[] args) throws IOException {
-////		TTest T = new TTest("./SepData/");
-////		for (int i = 0; i < 10; i++) {
-////			Process(T, i);
-////		 }
-//		readFromTwitterFile("test");
+		readFromTwitterFile("test");
 		readFromLinkedInFile("test");
 	}
-//
-//	private static void Process(double[][] fb, double[][] twit, double[][] quora, double[][] twit_top, double[][] gnd,
-//			double[][] valid) {
-//		System.out.println("Data Loading Finished...");
-//		Parameter pm = new Parameter(fb, twit, quora, twit_top, gnd, valid);
-//		Model md = new Model(pm);
-//		md.TrainingProcess();
-//	}
-//
-//	private static void Process(TTest T, int i) {
-//		System.out.println("Data Loading Finished...");
-//		Parameter pm = new Parameter(T, i);
-//		Model md = new Model(pm);
-//		double value = md.TrainingProcess();
-//	}
-	
+
 	public static void processText(String source) {
 		// Train the CRF and get Model File
 		String[] commandTrain = {"cmd", 
@@ -100,14 +81,32 @@ public class Main {
 		runLDA("twitter",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
 		System.err.println("Topic Modelling Completed!");
 		
-		writeTwitterTrainAndTest();
+		writeTrainAndTest("twitter");
 	}
 	
-	public static void writeTwitterTrainAndTest() {		
+	public static void processLinkedIn() {
+		ArrayList<LinkedIn> linkedinList = readFromLinkedInFile("train");
+		ArrayList<LinkedIn> linkedinListTest = readFromLinkedInFile("test");
+		for(int i=0;i<linkedinListTest.size();i++) {
+			linkedinList.add(linkedinListTest.get(i));
+		}
+		writeFromLinkedInObject(linkedinList);
+		
+		System.err.println("Pre-processing LinkedIn Text for LDA....");
+		processText("linkedin");
+		System.err.println("Running Topic Modelling (LDA)..");
+		System.err.println("Please wait patiently, it will take a while...");
+		runLDA("linkedin",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
+		System.err.println("Topic Modelling Completed!");
+		
+		writeTrainAndTest("linkedin");
+	}
+	
+	public static void writeTrainAndTest(String source) {		
 		try {
 			TreeMap<Integer, ArrayList<Double>> featuresMap = new TreeMap<Integer, ArrayList<Double>>();
 			
-			BufferedReader br = new BufferedReader(new FileReader(GlobalHelper.pathToProcessed+"/twitter_composition.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(GlobalHelper.pathToProcessed+"/"+source+"_composition.txt"));
 	
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -126,8 +125,8 @@ public class Main {
 				featuresMap.put(index,features);
 			}
 			
-			PrintWriter pwTrain = new PrintWriter(GlobalHelper.pathToSVMData+"/twitter_train.csv");
-			PrintWriter pwTest = new PrintWriter(GlobalHelper.pathToSVMData+"/twitter_test.csv");
+			PrintWriter pwTrain = new PrintWriter(GlobalHelper.pathToSVMData+"/"+source+"_train.csv");
+			PrintWriter pwTest = new PrintWriter(GlobalHelper.pathToSVMData+"/"+source+"_test.csv");
 			for(Map.Entry<Integer,ArrayList<Double>> entry : featuresMap.entrySet()) {
 				Integer key = entry.getKey();
 				ArrayList<Double> value = entry.getValue();
@@ -233,7 +232,19 @@ public class Main {
 		return userTweetList;
 	}
 	
-//	ArrayList of tweet, associated with a user
+	
+	public static void writeFromLinkedInObject(ArrayList<LinkedIn> linkedinList) {
+		for(int i=0;i<linkedinList.size();i++) {
+			PrintWriter pw = null;
+			try{ pw = new PrintWriter(GlobalHelper.pathToProcessedLinkedIn+"/"+(i+1)+".txt");}
+			catch (Exception e) { e.printStackTrace(); }
+			pw.println(linkedinList.get(i).getText());
+			pw.flush();
+			pw.close();
+		}
+	}
+	
+	//	ArrayList of LinkedIn, associated with a user
 	public static ArrayList<LinkedIn> readFromLinkedInFile(String type) {
 		String LinkedInFolder = null;
 		int numRecords = 0;
