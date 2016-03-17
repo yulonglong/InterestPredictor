@@ -38,6 +38,8 @@ public class Main {
 	}
 
 	public double[][] SVM_Late_Process(String source) throws IOException {
+		System.err.println("Starting SVM " + source);
+		System.err.println("Please wait patiently..");
 		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
 		    @Override public void print(String s) {} // Disables svm output
 		});
@@ -86,6 +88,7 @@ public class Main {
 			for(int j=0;j<X_test.length;j++){
 				score[j][i] += currProbTest[j][1];
 			}
+			System.err.println("SVM : "+(i+1)+" out of 20");
 		}
 		return score;
 		
@@ -184,6 +187,8 @@ public class Main {
 	}
 
 	public double[][] SVM_Early_Process() throws IOException {
+		System.err.println("Starting SVM for all sources");
+		System.err.println("Please wait patiently..");
 		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
 		    @Override public void print(String s) {} // Disables svm output
 		});
@@ -233,7 +238,7 @@ public class Main {
 			param.weight_label = new int[0];
 			param.weight = new double[0];
 	
-			System.out.println(svm.svm_check_parameter(problem, param)); 
+//			System.out.println(svm.svm_check_parameter(problem, param)); 
 			svm_model model = svm.svm_train(problem, param); 
 			double[][] currProbTest = Evaluate_Late1(model, X_test);
 			
@@ -241,6 +246,7 @@ public class Main {
 			for(int j=0;j<X_test.length;j++){
 				score[j][i] += currProbTest[j][1];
 			}
+			System.err.println("SVM : "+(i+1)+" out of 20");
 		}
 		return score;
 		
@@ -304,16 +310,18 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Misc.Main.processTwitter();
-		Misc.Main.processLinkedIn();
-		Misc.Main.processFacebook();
+		Misc.Main.folderCheck();
+		Misc.Main.processTwitter(false);
+		Misc.Main.processLinkedIn(false);
+		Misc.Main.processFacebook(false);
 		
 		Main t = new Main();
 		
-//		double[][] result = t.SVM_Early_Process();
-//		for(int i=1;i<=10;i++) {
-//			t.Evaluate_Early(result, i, t.TRU);
-//		 }
+		double[][] result = t.SVM_Early_Process();
+		System.out.println("Early Fusion Result:");
+		for(int i=1;i<=10;i++) {
+			t.Evaluate_Early(result, i, t.TRU);
+		 }
 
 		
 		 double[][] fbResult = t.SVM_Late_Process("facebook");
@@ -332,9 +340,10 @@ public class Main {
 			t.Evaluate_Early(twitterResult, i, t.TRU);
 		 }
 		 
-//		 for(int i=1;i<=10;i++) {
-//			t.Evaluate_Late2(twitterResult, linkedinResult, twitterResult, i, t.TRU);
-//		 }
+		 System.out.println("Late Fusion Result:");
+		 for(int i=1;i<=10;i++) {
+			t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, i, t.TRU);
+		 }
 
 	}
 }

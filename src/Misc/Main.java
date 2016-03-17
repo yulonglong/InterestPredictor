@@ -46,7 +46,7 @@ public class Main {
 		ExecuteCommandHelper.runExecutable(commandTrain, new File(GlobalHelper.pathToProcessed));
 	}
 
-	public static void runLDA(String source, int numTopics, int optimizeInterval) {
+	public static void runLDA(String source) {
 		// Test the CRF and using the Model File
 		String[] commandTest = {"cmd", 
 		"/c" ,
@@ -55,68 +55,78 @@ public class Main {
 		"--input",
 		source+"_processed.mallet",
 		"--num-topics",
-		Integer.toString(numTopics),
+		Integer.toString(GlobalHelper.numTopicsLDA),
+		"--num-iterations",
+		Integer.toString(GlobalHelper.numIterationsLDA),
 		"--optimize-interval",
-		Integer.toString(optimizeInterval),
+		Integer.toString(GlobalHelper.numOptimizeIntervalLDA),
 		"--output-state",
 		"topic-state.gz",
 		"--output-topic-keys",
 		source+"_keys.txt",
 		"--output-doc-topics",
-		source+"_composition.txt"};
+		source+"_composition.txt",
+		"--num-threads",
+		"4"};
 		// System.out.println(Arrays.toString(commandTest));
 		ExecuteCommandHelper.runExecutable(commandTest, new File(GlobalHelper.pathToProcessed));
 	}
 	
-	public static void processTwitter() {
-		ArrayList<ArrayList<Tweet>> userTweetList = readFromTwitterFile("train");
-		ArrayList<ArrayList<Tweet>> userTweetListTest = readFromTwitterFile("test");
-		for(int i=0;i<userTweetListTest.size();i++) {
-			userTweetList.add(userTweetListTest.get(i));
+	public static void processTwitter(boolean readFromRawFile) {
+		if (readFromRawFile) {
+			ArrayList<ArrayList<Tweet>> userTweetList = readFromTwitterFile("train");
+			ArrayList<ArrayList<Tweet>> userTweetListTest = readFromTwitterFile("test");
+			for(int i=0;i<userTweetListTest.size();i++) {
+				userTweetList.add(userTweetListTest.get(i));
+			}
+			writeFromTwitterObject(userTweetList);
 		}
-		writeFromTwitterObject(userTweetList);
 		
 		System.err.println("Pre-processing Twitter Text for LDA....");
 		processText("twitter");
 		System.err.println("Running Topic Modelling (LDA)..");
 		System.err.println("Please wait patiently, it will take a while...");
-		runLDA("twitter",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
+		runLDA("twitter");
 		System.err.println("Topic Modelling Completed!");
 		
 		writeTrainAndTest("twitter");
 	}
 	
-	public static void processLinkedIn() {
-		ArrayList<LinkedIn> linkedinList = readFromLinkedInFile("train");
-		ArrayList<LinkedIn> linkedinListTest = readFromLinkedInFile("test");
-		for(int i=0;i<linkedinListTest.size();i++) {
-			linkedinList.add(linkedinListTest.get(i));
+	public static void processLinkedIn(boolean readFromRawFile) {
+		if (readFromRawFile) {
+			ArrayList<LinkedIn> linkedinList = readFromLinkedInFile("train");
+			ArrayList<LinkedIn> linkedinListTest = readFromLinkedInFile("test");
+			for(int i=0;i<linkedinListTest.size();i++) {
+				linkedinList.add(linkedinListTest.get(i));
+			}
+			writeFromLinkedInObject(linkedinList);
 		}
-		writeFromLinkedInObject(linkedinList);
 		
 		System.err.println("Pre-processing LinkedIn Text for LDA....");
 		processText("linkedin");
 		System.err.println("Running Topic Modelling (LDA)..");
 		System.err.println("Please wait patiently, it will take a while...");
-		runLDA("linkedin",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
+		runLDA("linkedin");
 		System.err.println("Topic Modelling Completed!");
 		
 		writeTrainAndTest("linkedin");
 	}
 	
-	public static void processFacebook() {
-		ArrayList<Facebook> fbList = readFromFacebookFile("train");
-		ArrayList<Facebook> fbListTest = readFromFacebookFile("test");
-		for(int i=0;i<fbListTest.size();i++) {
-			fbList.add(fbListTest.get(i));
+	public static void processFacebook(boolean readFromRawFile){
+		if (readFromRawFile) {
+			ArrayList<Facebook> fbList = readFromFacebookFile("train");
+			ArrayList<Facebook> fbListTest = readFromFacebookFile("test");
+			for(int i=0;i<fbListTest.size();i++) {
+				fbList.add(fbListTest.get(i));
+			}
+			writeFromFacebookObject(fbList);
 		}
-		writeFromFacebookObject(fbList);
 		
 		System.err.println("Pre-processing Facebook Text for LDA....");
 		processText("facebook");
 		System.err.println("Running Topic Modelling (LDA)..");
 		System.err.println("Please wait patiently, it will take a while...");
-		runLDA("facebook",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
+		runLDA("facebook");
 		System.err.println("Topic Modelling Completed!");
 		
 		writeTrainAndTest("facebook");
@@ -153,7 +163,7 @@ public class Main {
 				if (key <= GlobalHelper.numTraining) {
 					pwTrain.print(value.get(0));
 					for(int i=1;i<value.size();i++){
-						pwTrain.print(","+value.get(0));
+						pwTrain.print(","+value.get(i));
 					}
 					pwTrain.println();
 					pwTrain.flush();
@@ -161,7 +171,7 @@ public class Main {
 				else {
 					pwTest.print(value.get(0));
 					for(int i=1;i<value.size();i++){
-						pwTest.print(","+value.get(0));
+						pwTest.print(","+value.get(i));
 					}
 					pwTest.println();
 					pwTest.flush();
@@ -330,5 +340,19 @@ public class Main {
 		}
 		System.out.println("===============FINISH READING FACEBOOK FILES===============");
 		return facebookList;
+	}
+	
+	public static void folderCheck() {
+		File processed = new File(GlobalHelper.pathToProcessed);
+		File processedTwitter = new File(GlobalHelper.pathToProcessedTwitter);
+		File processedLinkedIn = new File(GlobalHelper.pathToProcessedLinkedIn);
+		File processedFacebook = new File(GlobalHelper.pathToProcessedFacebook);
+		File processedSVM = new File(GlobalHelper.pathToSVMData);
+
+		if (!processed.exists()) processed.mkdir();
+		if (!processedTwitter.exists()) processedTwitter.mkdir();
+		if (!processedLinkedIn.exists()) processedLinkedIn.mkdir();
+		if (!processedFacebook.exists()) processedFacebook.mkdir();
+		if (!processedSVM.exists()) processedSVM.mkdir();
 	}
 }
