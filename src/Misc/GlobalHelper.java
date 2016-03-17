@@ -1,4 +1,7 @@
 package Misc;
+
+import java.nio.file.*;
+
 public class GlobalHelper {
 	public static final String pathToTestFacebook = "./dataset/Test/Facebook";
 	public static final String pathToTestLinkedIn = "./dataset/Test/LinkedIn";
@@ -10,4 +13,8 @@ public class GlobalHelper {
 	public static final String pathToTrainGroundTruth = "./dataset/Train/GroundTruth";
 	public static final int numTraining = 420;
 	public static final int numTest = 150;
+	public static final String f_currPathStr = Paths.get("").toAbsolutePath().toString();
+	
+	public static final String pathToProcessed = "./dataset/Processed";
+	public static final String pathToProcessedTwitter = "./dataset/Processed/Twitter";
 }

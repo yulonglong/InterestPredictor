@@ -306,13 +306,7 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		ArrayList<ArrayList<Tweet>> userTweetList = Misc.Main.readFromTwitterFile("train");
-		for(int i=0;i<userTweetList.size();i++){
-			for(int j=0;j<userTweetList.get(i).size();j++){
-				System.out.println(userTweetList.get(i).get(j).toString());
-			}
-		}
-		System.out.println("Number of users : "+userTweetList.size());
+		Misc.Main.processTwitter();
 		
 //		Main t = new Main();
 //		

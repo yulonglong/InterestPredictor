@@ -2,6 +2,7 @@ package Misc;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -13,32 +14,98 @@ import Wrapper.Tweet;
 
 public class Main {
 	
-	public static void main(String[] args) throws IOException {
-//		TTest T = new TTest("./SepData/");
-//		for (int i = 0; i < 10; i++) {
-//			Process(T, i);
-//		 }
-		readFromTwitterFile("test");
+//	public static void main(String[] args) throws IOException {
+////		TTest T = new TTest("./SepData/");
+////		for (int i = 0; i < 10; i++) {
+////			Process(T, i);
+////		 }
+//		readFromTwitterFile("test");
+//	}
+//
+//	private static void Process(double[][] fb, double[][] twit, double[][] quora, double[][] twit_top, double[][] gnd,
+//			double[][] valid) {
+//		System.out.println("Data Loading Finished...");
+//		Parameter pm = new Parameter(fb, twit, quora, twit_top, gnd, valid);
+//		Model md = new Model(pm);
+//		md.TrainingProcess();
+//	}
+//
+//	private static void Process(TTest T, int i) {
+//		System.out.println("Data Loading Finished...");
+//		Parameter pm = new Parameter(T, i);
+//		Model md = new Model(pm);
+//		double value = md.TrainingProcess();
+//	}
+	
+	public static void processText(String source) {
+		// Train the CRF and get Model File
+		String[] commandTrain = {"cmd", 
+		"/c" ,
+		"%MALLET_HOME%\\bin\\mallet",
+		"import-dir",
+		"--input",
+		"./"+source,
+		"--output",
+		source+"_processed.mallet",
+		"--keep-sequence",
+		"--remove-stopwords"};
+		// System.out.println(Arrays.toString(commandTrain));
+		ExecuteCommandHelper.runExecutable(commandTrain, new File(GlobalHelper.pathToProcessed));
 	}
 
-	private static void Process(double[][] fb, double[][] twit, double[][] quora, double[][] twit_top, double[][] gnd,
-			double[][] valid) {
-		System.out.println("Data Loading Finished...");
-		Parameter pm = new Parameter(fb, twit, quora, twit_top, gnd, valid);
-		Model md = new Model(pm);
-		md.TrainingProcess();
+	public static void runLDA(String source, int numTopics) {
+		// Test the CRF and using the Model File
+		String[] commandTest = {"cmd", 
+		"/c" ,
+		"%MALLET_HOME%\\bin\\mallet",
+		"train-topics",
+		"--input",
+		source+"_processed.mallet",
+		"--num-topics",
+		Integer.toString(numTopics),
+		"--output-state",
+		"topic-state.gz",
+		"--output-topic-keys",
+		source+"_keys.txt",
+		"--output-doc-topics",
+		source+"_compositition.txt"};
+		// System.out.println(Arrays.toString(commandTest));
+		ExecuteCommandHelper.runExecutable(commandTest, new File(GlobalHelper.pathToProcessed));
 	}
-
-	private static void Process(TTest T, int i) {
-		System.out.println("Data Loading Finished...");
-		Parameter pm = new Parameter(T, i);
-		Model md = new Model(pm);
-		double value = md.TrainingProcess();
+	
+	public static void processTwitter() {
+		ArrayList<ArrayList<Tweet>> userTweetList = readFromTwitterFile("train");
+		ArrayList<ArrayList<Tweet>> userTweetListTest = readFromTwitterFile("test");
+		for(int i=0;i<userTweetListTest.size();i++) {
+			userTweetList.add(userTweetListTest.get(i));
+		}
+		writeFromTwitterObject(userTweetList);
+		
+		System.err.println("Pre-processing Twitter Text for LDA....");
+		processText("twitter");
+		System.err.println("Running Topic Modelling (LDA)..");
+		System.err.println("Please wait patiently, it will take a while...");
+		runLDA("twitter",30);
+		System.err.println("Topic Modelling Completed!");
+	}
+	
+	public static void writeFromTwitterObject(ArrayList<ArrayList<Tweet>> userTweetList) {
+		for(int i=0;i<userTweetList.size();i++) {
+			StringBuilder sb = new StringBuilder();
+			for(int j=0;j<userTweetList.get(i).size();j++){
+				sb.append(userTweetList.get(i).get(j).getText()+"\n");
+			}
+			PrintWriter pw = null;
+			try{ pw = new PrintWriter(GlobalHelper.pathToProcessedTwitter+"/"+(i+1)+".txt");}
+			catch (Exception e) { e.printStackTrace(); }
+			pw.println(sb.toString());
+			pw.flush();
+			pw.close();
+		}
 	}
 	
 	//	ArrayList of tweet, associated with a user
 	public static ArrayList<ArrayList<Tweet>> readFromTwitterFile(String type) {
-		
 		String twitterFolder = null;
 		int numRecords = 0;
 		int offset = 0;

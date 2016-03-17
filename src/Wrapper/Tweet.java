@@ -38,8 +38,12 @@ public class Tweet {
 			text = rawText.replaceAll("(?:(?:\\r\\n)|(?:\\r)|(?:\\n))+", " | ");
 			text =  text.replaceAll("\\t+", " ");
 			
-			String urlRegex = "(?:http:\\/\\/t\\.co\\/[A-Za-z0-9]+)";
-			text =  text.replaceAll(urlRegex, " url ");
+			// Ignore URL, replace with blank character
+			String urlRegex = "(?:http[s]?:\\/\\/t\\.co\\/[A-Za-z0-9]+)";
+			text =  text.replaceAll(urlRegex, "");
+			
+			urlRegex = "(?:http[s]?:\\/\\/t\\.co)";
+			text =  text.replaceAll(urlRegex, "");
 		}
 		else{
 			System.err.println("no text key in: " + profileId + " json!");
