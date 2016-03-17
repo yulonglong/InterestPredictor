@@ -110,7 +110,7 @@ public class Main {
 		for(int i=0;i<fbListTest.size();i++) {
 			fbList.add(fbListTest.get(i));
 		}
-		writeFromFacebookObject(fbListTest);
+		writeFromFacebookObject(fbList);
 		
 		System.err.println("Pre-processing Facebook Text for LDA....");
 		processText("facebook");

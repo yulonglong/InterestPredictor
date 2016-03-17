@@ -38,12 +38,15 @@ public class Main {
 	}
 
 	public double[][] SVM_Late_Process(String source) throws IOException {
+		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
+		    @Override public void print(String s) {} // Disables svm output
+		});
+		
 		String relativePath = this.relativePath;
 		svm_node[][] X = loadX(relativePath + source + "_train.csv");
 		double[][] Y = loadY(relativePath + "gnd_train.csv");
 		svm_node[][] X_test = loadX(relativePath + source + "_test.csv");
 
-		
 		double[][] score = new double[X_test.length][numLabels];
 			
 		for(int i = 0;i<numLabels;i++){
@@ -79,7 +82,7 @@ public class Main {
 			svm_model model = svm.svm_train(problem, param); 
 			double[][] currProbTest = Evaluate_Late1(model, X_test);
 			
-			System.out.println("currProbTest "+currProbTest.length);
+//			System.out.println("currProbTest "+currProbTest.length);
 			for(int j=0;j<X_test.length;j++){
 				score[j][i] += currProbTest[j][1];
 			}
@@ -159,6 +162,7 @@ public class Main {
 			sum_sk += 1.0;
 			sum_pk += k;
 			double[] row = mx[n];
+//			System.out.println(Arrays.toString(row));
 			int[] list = rk.rank(row);
 			Hashtable<Integer, Boolean> interest = truth.get(n);
 			boolean flag = false;
@@ -180,13 +184,17 @@ public class Main {
 	}
 
 	public double[][] SVM_Early_Process() throws IOException {
-		svm_node[][] X1 = loadX(relativePath + "fb_train.csv");
+		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
+		    @Override public void print(String s) {} // Disables svm output
+		});
+		
+		svm_node[][] X1 = loadX(relativePath + "twitter_train.csv");
 		svm_node[][] X2 = loadX(relativePath + "linkedin_train.csv");
-		svm_node[][] X3 = loadX(relativePath + "twitter_train.csv");
+		svm_node[][] X3 = loadX(relativePath + "facebook_train.csv");
 		double[][] Y = loadY(relativePath + "gnd_train.csv");
-		svm_node[][] X1_test = loadX(relativePath + "fb_test.csv");
+		svm_node[][] X1_test = loadX(relativePath + "twitter_test.csv");
 		svm_node[][] X2_test = loadX(relativePath + "linkedin_test.csv");
-		svm_node[][] X3_test = loadX(relativePath + "twitter_test.csv");
+		svm_node[][] X3_test = loadX(relativePath + "facebook_test.csv");
 		svm_node[][] X = MergeX(X1, X2);
 		X = MergeX(X, X3);
 		svm_node[][] X_test = MergeX(X1_test, X2_test);
@@ -296,34 +304,38 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-//		Misc.Main.processTwitter();
-//		Misc.Main.processLinkedIn();
+		Misc.Main.processTwitter();
+		Misc.Main.processLinkedIn();
 		Misc.Main.processFacebook();
 		
 		Main t = new Main();
 		
 //		double[][] result = t.SVM_Early_Process();
-//  		t.Evaluate_Early(result, 2, t.TRU);
-// 		t.Evaluate_Early(result, 6, t.TRU);
-// 		t.Evaluate_Early(result, 10, t.TRU);
+//		for(int i=1;i<=10;i++) {
+//			t.Evaluate_Early(result, i, t.TRU);
+//		 }
 
+		
 		 double[][] fbResult = t.SVM_Late_Process("facebook");
+		 System.out.println("Facebook Result:");
 		 for(int i=1;i<=10;i++) {
 			t.Evaluate_Early(fbResult, i, t.TRU);
 		 }
-//		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-//		 for(int i=1;i<=10;i++) {
-//			t.Evaluate_Early(linkedinResult, i, t.TRU);
-//		 }
-//		 double[][] twitterResult = t.SVM_Late_Process("twitter");
-//		 for(int i=1;i<=10;i++) {
-//			t.Evaluate_Early(twitterResult, i, t.TRU);
-//		 }
+		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+		 System.out.println("LinkedIn Result:");
+		 for(int i=1;i<=10;i++) {
+			t.Evaluate_Early(linkedinResult, i, t.TRU);
+		 }
+		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+		 System.out.println("Twitter Result:");
+		 for(int i=1;i<=10;i++) {
+			t.Evaluate_Early(twitterResult, i, t.TRU);
+		 }
 		 
-//		 
-//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);
-//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 6, t.TRU);
-//		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 10, t.TRU);
+//		 for(int i=1;i<=10;i++) {
+//			t.Evaluate_Late2(twitterResult, linkedinResult, twitterResult, i, t.TRU);
+//		 }
+
 	}
 }
 
