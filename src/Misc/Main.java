@@ -18,17 +18,19 @@ import javax.json.JsonArray;
 
 import Jama.Matrix;
 import Utility.JsonFileReader;
+import Wrapper.LinkedIn;
 import Wrapper.Tweet;
 
 public class Main {
 	
-//	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 ////		TTest T = new TTest("./SepData/");
 ////		for (int i = 0; i < 10; i++) {
 ////			Process(T, i);
 ////		 }
 //		readFromTwitterFile("test");
-//	}
+		readFromLinkedInFile("test");
+	}
 //
 //	private static void Process(double[][] fb, double[][] twit, double[][] quora, double[][] twit_top, double[][] gnd,
 //			double[][] valid) {
@@ -229,5 +231,34 @@ public class Main {
 		}
 		System.out.println("===============FINISH READING TWITTER FILES===============");
 		return userTweetList;
+	}
+	
+//	ArrayList of tweet, associated with a user
+	public static ArrayList<LinkedIn> readFromLinkedInFile(String type) {
+		String LinkedInFolder = null;
+		int numRecords = 0;
+		int offset = 0;
+		if (type.equals("train")) {
+			LinkedInFolder = GlobalHelper.pathToTrainLinkedIn;
+			numRecords = GlobalHelper.numTraining;
+			offset = 1;
+		}
+		else {
+			LinkedInFolder = GlobalHelper.pathToTestLinkedIn;
+			numRecords = GlobalHelper.numTest;
+			offset = GlobalHelper.numTraining+1;
+		}
+		
+		ArrayList<LinkedIn> linkedinList = new ArrayList<LinkedIn>();
+		for(int userId=0;userId<numRecords;userId++) {
+			File fileEntry = new File(LinkedInFolder+"\\U"+Integer.toString(userId+offset));
+			String profileIdDir = fileEntry.toString();
+			String profileId = profileIdDir.substring(profileIdDir.lastIndexOf('\\') + 1);
+			
+			LinkedIn data = new LinkedIn(profileId, LinkedInFolder);
+			linkedinList.add(data);
+		}
+		System.out.println("===============FINISH READING LINKEDIN FILES===============");
+		return linkedinList;
 	}
 }
