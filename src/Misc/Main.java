@@ -1,10 +1,18 @@
 package Misc;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+
+import static java.nio.file.StandardCopyOption.*;
 
 import javax.json.JsonArray;
 
@@ -53,7 +61,7 @@ public class Main {
 		ExecuteCommandHelper.runExecutable(commandTrain, new File(GlobalHelper.pathToProcessed));
 	}
 
-	public static void runLDA(String source, int numTopics) {
+	public static void runLDA(String source, int numTopics, int optimizeInterval) {
 		// Test the CRF and using the Model File
 		String[] commandTest = {"cmd", 
 		"/c" ,
@@ -63,14 +71,14 @@ public class Main {
 		source+"_processed.mallet",
 		"--num-topics",
 		Integer.toString(numTopics),
-//		"--optimize-interval",
-//		"20",
+		"--optimize-interval",
+		Integer.toString(optimizeInterval),
 		"--output-state",
 		"topic-state.gz",
 		"--output-topic-keys",
 		source+"_keys.txt",
 		"--output-doc-topics",
-		source+"_compositition.txt"};
+		source+"_composition.txt"};
 		// System.out.println(Arrays.toString(commandTest));
 		ExecuteCommandHelper.runExecutable(commandTest, new File(GlobalHelper.pathToProcessed));
 	}
@@ -87,8 +95,70 @@ public class Main {
 		processText("twitter");
 		System.err.println("Running Topic Modelling (LDA)..");
 		System.err.println("Please wait patiently, it will take a while...");
-		runLDA("twitter",30);
+		runLDA("twitter",GlobalHelper.numTopicsLDA,GlobalHelper.numOptimizeIntervalLDA);
 		System.err.println("Topic Modelling Completed!");
+		
+		writeTwitterTrainAndTest();
+	}
+	
+	public static void writeTwitterTrainAndTest() {		
+		try {
+			TreeMap<Integer, ArrayList<Double>> featuresMap = new TreeMap<Integer, ArrayList<Double>>();
+			
+			BufferedReader br = new BufferedReader(new FileReader(GlobalHelper.pathToProcessed+"/twitter_composition.txt"));
+	
+			String line;
+			while ((line = br.readLine()) != null) {
+				String tokens[] = line.split("\\t");
+				
+				String filename = tokens[1].substring(tokens[1].lastIndexOf('/') + 1);
+				String filenumber = filename.substring(0, filename.length()-4);
+				// get the filenumber, which is the user id
+				int index = Integer.parseInt(filenumber);
+				
+				// read one row of real numbers
+				ArrayList<Double> features = new ArrayList<Double>();
+				for(int i=2;i<tokens.length;i++){
+					features.add(Double.parseDouble(tokens[i]));
+				}
+				featuresMap.put(index,features);
+			}
+			
+			PrintWriter pwTrain = new PrintWriter(GlobalHelper.pathToSVMData+"/twitter_train.csv");
+			PrintWriter pwTest = new PrintWriter(GlobalHelper.pathToSVMData+"/twitter_test.csv");
+			for(Map.Entry<Integer,ArrayList<Double>> entry : featuresMap.entrySet()) {
+				Integer key = entry.getKey();
+				ArrayList<Double> value = entry.getValue();
+				if (key <= GlobalHelper.numTraining) {
+					pwTrain.print(value.get(0));
+					for(int i=1;i<value.size();i++){
+						pwTrain.print(","+value.get(0));
+					}
+					pwTrain.println();
+					pwTrain.flush();
+				}
+				else {
+					pwTest.print(value.get(0));
+					for(int i=1;i<value.size();i++){
+						pwTest.print(","+value.get(0));
+					}
+					pwTest.println();
+					pwTest.flush();
+				}
+			}
+			pwTrain.close();
+			pwTest.close();
+			
+			
+			Files.copy(Paths.get(GlobalHelper.pathToTrainGroundTruth+"/groundTruth.txt"), 
+					Paths.get(GlobalHelper.pathToSVMData+"/gnd_train.csv"),
+					REPLACE_EXISTING);
+			
+			Files.copy(Paths.get(GlobalHelper.pathToTestGroundTruth+"/groundTruth.txt"), 
+					Paths.get(GlobalHelper.pathToSVMData+"/gnd_test.csv"),
+					REPLACE_EXISTING);
+		}
+		catch (Exception e) { e.printStackTrace(); }
 	}
 	
 	public static void writeFromTwitterObject(ArrayList<ArrayList<Tweet>> userTweetList) {

@@ -5,6 +5,7 @@ import libsvm.svm_model;
 import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_problem;
+import Misc.GlobalHelper;
 import Misc.Parameter;
 import Misc.TTest;
 
@@ -20,7 +21,7 @@ import Utility.Ranking;
 import Wrapper.Tweet;
 
 public class Main {
-	String relativePath = "SVM_Data/";
+	String relativePath = GlobalHelper.pathToSVMData+"/";
 	int numLabels = 20;
 	ArrayList<Hashtable<Integer, Boolean>> TRU = new ArrayList<Hashtable<Integer, Boolean>>();
 
@@ -308,16 +309,19 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		Misc.Main.processTwitter();
 		
-//		Main t = new Main();
-//		
+		Main t = new Main();
+		
 //		double[][] result = t.SVM_Early_Process();
 //  		t.Evaluate_Early(result, 2, t.TRU);
 // 		t.Evaluate_Early(result, 6, t.TRU);
 // 		t.Evaluate_Early(result, 10, t.TRU);
-//
+
 //		 double[][] fbResult = t.SVM_Late_Process("fb");
 //		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-//		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+		 double[][] twitterResult = t.SVM_Late_Process("twitter");
+		 t.Evaluate_Early(twitterResult, 6, t.TRU);
+		 t.Evaluate_Early(twitterResult, 10, t.TRU);
+		 
 //		 
 //		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 2, t.TRU);
 //		 t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, 6, t.TRU);
