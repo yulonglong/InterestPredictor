@@ -63,6 +63,8 @@ public class Main {
 		source+"_processed.mallet",
 		"--num-topics",
 		Integer.toString(numTopics),
+//		"--optimize-interval",
+//		"20",
 		"--output-state",
 		"topic-state.gz",
 		"--output-topic-keys",
