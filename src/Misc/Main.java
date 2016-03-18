@@ -61,7 +61,7 @@ public class Main {
 		"--optimize-interval",
 		Integer.toString(GlobalHelper.numOptimizeIntervalLDA),
 		"--output-state",
-		"topic-state.gz",
+		source+"-topic-state.gz",
 		"--output-topic-keys",
 		source+"_keys.txt",
 		"--output-doc-topics",

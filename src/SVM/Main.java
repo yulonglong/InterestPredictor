@@ -38,7 +38,7 @@ public class Main {
 		}
 	}
 
-	public double[][] SVM_Late_Process(String source) throws IOException {
+	public double[][] SVM_Late_Process(String source, boolean earlyFusion) throws IOException {
 		System.err.println("Starting SVM " + source);
 		System.err.println("Please wait patiently..");
 		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
@@ -46,20 +46,77 @@ public class Main {
 		});
 		
 		String relativePath = this.relativePath;
-		svm_node[][] X = loadX(relativePath + source + "_train.csv");
-		double[][] Y = loadY(relativePath + "gnd_train.csv");
-		svm_node[][] X_test = loadX(relativePath + source + "_test.csv");
+		
+		svm_node[][] X_ori;
+		svm_node[][] X_test;
+		double[][] Y;
+		
+		if (earlyFusion){
+			svm_node[][] X1 = loadX(relativePath + "twitter_train.csv");
+			svm_node[][] X2 = loadX(relativePath + "linkedin_train.csv");
+			svm_node[][] X3 = loadX(relativePath + "facebook_train.csv");
+			Y = loadY(relativePath + "gnd_train.csv");
+			svm_node[][] X1_test = loadX(relativePath + "twitter_test.csv");
+			svm_node[][] X2_test = loadX(relativePath + "linkedin_test.csv");
+			svm_node[][] X3_test = loadX(relativePath + "facebook_test.csv");
+			X_ori = MergeX(X1, X2);
+			X_ori = MergeX(X_ori, X3);
+			X_test = MergeX(X1_test, X2_test);
+			X_test = MergeX(X_test, X3_test);
+		}
+		else {
+			X_ori = loadX(relativePath + source + "_train.csv");
+			Y = loadY(relativePath + "gnd_train.csv");
+			X_test = loadX(relativePath + source + "_test.csv");
+		}
 
 		double[][] score = new double[X_test.length][numLabels];
 			
 		for(int i = 0;i<numLabels;i++){
 			//	Get the binary class for each label (out of the 20 label)
-			double[] currY = new double[X.length];
-			for(int j=0;j<X.length;j++){
-				currY[j] = Y[j][i];
+			double[] currY_ori = new double[X_ori.length];
+			int numZero = 0;
+			int numOne = 0;
+			for(int j=0;j<X_ori.length;j++){
+				currY_ori[j] = Y[j][i];
+				if (currY_ori[j] > 0.99) numOne++;
+				else numZero++;
 			}
+			
+			// Over sample to make both classes balanced
+			int maxNum = Math.max(numZero, numOne);
+			svm_node[][] X = new svm_node[maxNum*2][X_ori[0].length];
+			double[] currY = new double[maxNum*2];
+			int currIndex = 0;
+			for(currIndex=0;currIndex<X_ori.length;currIndex++){
+				X[currIndex] = X_ori[currIndex];
+				currY[currIndex] = currY_ori[currIndex];
+			}
+			
+			while ((numZero != numOne) && (currIndex < maxNum*2)) {
+				for(int j=0;j<X_ori.length;j++){
+					if (currIndex >= maxNum*2) break;
+					if ((numZero > numOne) && (currY_ori[j] > 0.99)) {
+						X[currIndex] = X_ori[j];
+						currY[currIndex] = currY_ori[j];
+						currIndex++;
+						numOne++;
+					}
+					else if ((numOne > numZero) && (currY_ori[j] < 0.01)){
+						X[currIndex] = X_ori[j];
+						currY[currIndex] = currY_ori[j];
+						currIndex++;
+						numZero++;
+					}
+					else if (numOne == numZero) {
+						break;
+					}
+				}
+			}
+			
+//			System.out.println(currIndex + " = " + numZero + " + " + numOne);
 	
-		svm_problem problem = new svm_problem();
+			svm_problem problem = new svm_problem();
 			problem.l = X.length;
 			problem.x = X;
 			problem.y = currY; 
@@ -69,17 +126,15 @@ public class Main {
 			param.svm_type = svm_parameter.C_SVC;
 			param.kernel_type = svm_parameter.RBF;
 			param.degree = 3;
-			param.gamma = 1; 
+			param.gamma = 0.5; 
 			param.nu = 0.5;
-			param.cache_size = 100;
+			param.cache_size = 1000;
 			param.C = 1;
-			param.eps = 1e-3;
+			param.eps = 1e-5;
 			param.p = 0.1;
 			param.shrinking = 1;
 			param.probability = 1;
 			param.nr_weight = 0;
-			param.weight_label = new int[0];
-			param.weight = new double[0];
 	
 	//		System.out.println(svm.svm_check_parameter(problem, param)); 
 			svm_model model = svm.svm_train(problem, param); 
@@ -118,13 +173,13 @@ public class Main {
 
 	public void Evaluate_Late2(double[][] mx1, double[][] mx2, double[][] mx3, int k,
 			ArrayList<Hashtable<Integer, Boolean>> truth, Value v) {
-		double l1 = 0.5;
+		double l1 = 0.9;
 		double l2 = 0.3;
-		double l3 = 0.9;
+		double l3 = 0.6;
 		double[][] mx = new double[mx1.length][mx1[0].length];
 		for (int i = 0; i < mx.length; i++) {
 			for (int j = 0; j < mx[0].length; j++) {
-				mx[i][j] = l1 * mx1[i][j] +l2 *  mx2[i][j] +l3 *  mx3[i][j];
+				mx[i][j] = (l1 * mx1[i][j] +l2 *  mx2[i][j] +l3 *  mx3[i][j]) / 3.0;
 			}
 		}
 		double sum_sk = 0.0;
@@ -193,72 +248,6 @@ public class Main {
 		pw.close();
 	}
 
-	public double[][] SVM_Early_Process() throws IOException {
-		System.err.println("Starting SVM for all sources");
-		System.err.println("Please wait patiently..");
-		svm.svm_set_print_string_function(new libsvm.svm_print_interface(){
-		    @Override public void print(String s) {} // Disables svm output
-		});
-		
-		svm_node[][] X1 = loadX(relativePath + "twitter_train.csv");
-		svm_node[][] X2 = loadX(relativePath + "linkedin_train.csv");
-		svm_node[][] X3 = loadX(relativePath + "facebook_train.csv");
-		double[][] Y = loadY(relativePath + "gnd_train.csv");
-		svm_node[][] X1_test = loadX(relativePath + "twitter_test.csv");
-		svm_node[][] X2_test = loadX(relativePath + "linkedin_test.csv");
-		svm_node[][] X3_test = loadX(relativePath + "facebook_test.csv");
-		svm_node[][] X = MergeX(X1, X2);
-		X = MergeX(X, X3);
-		svm_node[][] X_test = MergeX(X1_test, X2_test);
-		X_test = MergeX(X_test, X3_test);
-		
-		double[][] score = new double[X_test.length][numLabels];
-		
-		for(int i = 0;i<numLabels;i++){
-			// Get the binary class for each label (out of the 20 label)
-			double[] currY = new double[X.length];
-			for(int j=0;j<X.length;j++){
-				currY[j] = Y[j][i];
-			}
-//			
-//			System.out.println(Arrays.toString(currY));
-			
-			svm_problem problem = new svm_problem();
-			problem.l = X.length; 
-			problem.x = X; 
-			problem.y = currY; 
-	
-			svm_parameter param = new svm_parameter();
-			param.svm_type = svm_parameter.C_SVC;
-			param.kernel_type = svm_parameter.RBF;
-			param.degree = 3;
-			param.gamma = 1; 
-			param.coef0 = 0;
-			param.nu = 0.5;
-			param.cache_size = 100;
-			param.C = 1;
-			param.eps = 1e-3;
-			param.p = 0.1;
-			param.shrinking = 1;
-			param.probability = 1;
-			param.nr_weight = 0;
-			param.weight_label = new int[0];
-			param.weight = new double[0];
-	
-//			System.out.println(svm.svm_check_parameter(problem, param)); 
-			svm_model model = svm.svm_train(problem, param); 
-			double[][] currProbTest = Evaluate_Late1(model, X_test);
-			
-//			System.out.println("currProbTest "+currProbTest.length);
-			for(int j=0;j<X_test.length;j++){
-				score[j][i] += currProbTest[j][1];
-			}
-			System.err.println("SVM : "+(i+1)+" out of 20");
-		}
-		return score;
-		
-	}
-
 	public svm_node[][] loadX(String path) throws IOException {
 		ArrayList<String> content = IO.FileLoad(path);
 		svm_node[][] p = new svm_node[content.size()][];
@@ -321,17 +310,17 @@ public class Main {
 		Misc.Main.folderCheck();
 		Misc.Main.processTwitter(false);
 		Misc.Main.processLinkedIn(false);
-		Misc.Main.processFacebook(true);
+		Misc.Main.processFacebook(false);
 		
 		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
 		pw.println("K\tEarly-P\tEarly-S\tFB-P\tFB-S\tLI-P\tLI-S\tTW-P\tTW-S\tLate-P\tLate-S");
 		
 		Main t = new Main();
 		
-		double[][] result = t.SVM_Early_Process();
-		double[][] fbResult = t.SVM_Late_Process("facebook");
-		double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-		double[][] twitterResult = t.SVM_Late_Process("twitter");
+		double[][] result = t.SVM_Late_Process("early-fusion", true);
+		double[][] fbResult = t.SVM_Late_Process("facebook", false);
+		double[][] linkedinResult = t.SVM_Late_Process("linkedin", false);
+		double[][] twitterResult = t.SVM_Late_Process("twitter", false);
 		
 		int maxK = 10;
 		
