@@ -5,6 +5,7 @@ import libsvm.svm_model;
 import libsvm.svm_node;
 import libsvm.svm_parameter;
 import libsvm.svm_problem;
+import Misc.GeneticAlgorithm;
 import Misc.GlobalHelper;
 import Misc.Parameter;
 import Misc.TTest;
@@ -171,11 +172,7 @@ public class Main {
 		return prob;
 	}
 
-	public void Evaluate_Late2(double[][] mx1, double[][] mx2, double[][] mx3, int k,
-			ArrayList<Hashtable<Integer, Boolean>> truth, Value v) {
-		double l1 = 0.9;
-		double l2 = 0.3;
-		double l3 = 0.6;
+	public void Evaluate_Late2(double l1, double l2, double l3, double[][] mx1, double[][] mx2, double[][] mx3, int k, ArrayList<Hashtable<Integer, Boolean>> truth, Value v) {
 		double[][] mx = new double[mx1.length][mx1[0].length];
 		for (int i = 0; i < mx.length; i++) {
 			for (int j = 0; j < mx[0].length; j++) {
@@ -184,19 +181,31 @@ public class Main {
 		}
 		double sum_sk = 0.0;
 		double sum_pk = 0.0;
+		double sum_rk = 0.0;
 		double acc_sk = 0.0;
 		double acc_pk = 0.0;
+		double acc_rk = 0.0;
 		Ranking rk = new Ranking();
 		for (int n = 0; n < mx.length; n++) {
+			Hashtable<Integer, Boolean> interest = truth.get(n);
+			double curr_rk = 0;
+			// find the number of correct interest;
+			for(int i=0;i<GlobalHelper.numClasses;i++) {
+				if (interest.containsKey(i)) {
+					curr_rk += 1.0;
+				}
+			}
+			sum_rk += curr_rk;
 			sum_sk += 1.0;
 			sum_pk += k;
 			double[] row = mx[n];
 			int[] list = rk.rank(row);
-			Hashtable<Integer, Boolean> interest = truth.get(n);
+			
 			boolean flag = false;
 			for (int i = 0; i < k; i++) {
 				if (interest.containsKey(list[i])) {
 					acc_pk += 1.0;
+					acc_rk += 1.0;
 					flag = true;
 				}
 			}
@@ -207,6 +216,7 @@ public class Main {
 //		Value v = new Value();
 		v.pk = acc_pk / sum_pk;
 		v.sk = acc_sk / sum_sk;
+		v.rk = acc_rk / sum_rk;
 //		System.out.println("P@" + k + "\t" + v.pk);
 //		System.out.println("S@" + k + "\t" + v.sk);
 	}
@@ -327,7 +337,7 @@ public class Main {
 //		Misc.Main.processFacebook(false);
 		
 		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
-		pw.println("K\tEarly-P\tEarly-R\tEarly-S\tFB-P\tFB-R\tFB-S\tLI-P\tLI-R\tLI-S\tTW-P\tTW-R\tTW-S\tLate-P\tLate-R\tLate-S");
+		pw.println("K\tEarly-P\tEarly-R\tEarly-S\tFB-P\tFB-R\tFB-S\tLI-P\tLI-R\tLI-S\tTW-P\tTW-R\tTW-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S");
 		
 		Main t = new Main();
 		
@@ -338,7 +348,7 @@ public class Main {
 		
 		int maxK = 10;
 		
-		double[] totalScore = new double[15];
+		double[] totalScore = new double[24];
 		int scoreIndex = 0;
 		for(int i=1;i<=maxK;i++) {
 			pw.print(i);
@@ -361,15 +371,36 @@ public class Main {
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
-			t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			// BestWeights
+			// 1053.411, -0.6880, -2.2708
+			// 786.020, -0.0046, -0.2845
+			// 456.958, -0.3788, -5.83058
+			// 886.970, -0.2734, -13.7735
+			
+			t.Evaluate_Late2(1053.411, -0.6880, -2.2708, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+
+			t.Evaluate_Late2(786.020, -0.0046, -0.2845, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+			
+			t.Evaluate_Late2(456.958, -0.3788, -5.83058, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+			
+			t.Evaluate_Late2(886.970, -0.2734, -13.7735, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+
+//			GeneticAlgorithm ga = new GeneticAlgorithm(fbResult,linkedinResult, twitterResult, t.TRU);
+//			ga.runGA();
 			
 			pw.println();
 			pw.flush();
 		}
 		pw.print("Ave");
-		for(int i=0;i<15;i++) {
+		for(int i=0;i<24;i++) {
 			pw.print("\t"+String.format( "%.3f", totalScore[i]/(double)maxK ));
 		}
 		pw.println();
@@ -378,8 +409,3 @@ public class Main {
 	}
 }
 
-class Value {
-	double pk = 0.0;
-	double sk = 0.0;
-	double rk = 0.0;
-}

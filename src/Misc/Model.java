@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import Jama.Matrix;
+import SVM.Value;
 import Utility.Ranking;
 
 public class Model {
@@ -480,7 +481,3 @@ public class Model {
 	}
 }
 
-class Value {
-	double pk = 0.0;
-	double sk = 0.0;
-}
