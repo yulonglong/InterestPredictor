@@ -249,6 +249,7 @@ public class Main {
 			double[] row = mx[n];
 			pw.println("Test probability row " + n + " : " + Arrays.toString(row));
 			int[] list = rk.rank(row);
+			pw.println("Test rank row " + n + " : " + Arrays.toString(list));
 			
 			boolean flag = false;
 			for (int i = 0; i < k; i++) {
@@ -331,10 +332,10 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-//		Misc.Main.folderCheck();
-//		Misc.Main.processTwitter(false);
-//		Misc.Main.processLinkedIn(false);
-//		Misc.Main.processFacebook(false);
+		Misc.Main.folderCheck();
+		Misc.Main.processTwitter(false);
+		Misc.Main.processLinkedIn(false);
+		Misc.Main.processFacebook(false);
 		
 		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
 		pw.println("K\tEarly-P\tEarly-R\tEarly-S\tFB-P\tFB-R\tFB-S\tLI-P\tLI-R\tLI-S\tTW-P\tTW-R\tTW-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S");
