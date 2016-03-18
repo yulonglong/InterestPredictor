@@ -218,20 +218,33 @@ public class Main {
 		
 		double sum_sk = 0.0;
 		double sum_pk = 0.0;
+		double sum_rk = 0.0;
 		double acc_sk = 0.0;
 		double acc_pk = 0.0;
+		double acc_rk = 0.0;
 		Ranking rk = new Ranking();
 		for (int n = 0; n < mx.length; n++) {
+			Hashtable<Integer, Boolean> interest = truth.get(n);
+			double curr_rk = 0;
+			// find the number of correct interest;
+			for(int i=0;i<GlobalHelper.numClasses;i++) {
+				if (interest.containsKey(i)) {
+					curr_rk += 1.0;
+				}
+			}
+			
+			sum_rk += curr_rk;
 			sum_sk += 1.0;
 			sum_pk += k;
 			double[] row = mx[n];
 			pw.println("Test probability row " + n + " : " + Arrays.toString(row));
 			int[] list = rk.rank(row);
-			Hashtable<Integer, Boolean> interest = truth.get(n);
+			
 			boolean flag = false;
 			for (int i = 0; i < k; i++) {
 				if (interest.containsKey(list[i])) {
 					acc_pk += 1.0;
+					acc_rk += 1.0;
 					flag = true;
 				}
 			}
@@ -243,6 +256,7 @@ public class Main {
 //		Value v = new Value();
 		v.pk = acc_pk / sum_pk;
 		v.sk = acc_sk / sum_sk;
+		v.rk = acc_rk / sum_rk;
 //		System.out.println("P@" + k + "\t" + v.pk);
 //		System.out.println("S@" + k + "\t" + v.sk);
 		pw.close();
@@ -307,13 +321,13 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws IOException {
-		Misc.Main.folderCheck();
-		Misc.Main.processTwitter(false);
-		Misc.Main.processLinkedIn(false);
-		Misc.Main.processFacebook(false);
+//		Misc.Main.folderCheck();
+//		Misc.Main.processTwitter(false);
+//		Misc.Main.processLinkedIn(false);
+//		Misc.Main.processFacebook(false);
 		
 		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
-		pw.println("K\tEarly-P\tEarly-S\tFB-P\tFB-S\tLI-P\tLI-S\tTW-P\tTW-S\tLate-P\tLate-S");
+		pw.println("K\tEarly-P\tEarly-R\tEarly-S\tFB-P\tFB-R\tFB-S\tLI-P\tLI-R\tLI-S\tTW-P\tTW-R\tTW-S\tLate-P\tLate-R\tLate-S");
 		
 		Main t = new Main();
 		
@@ -324,36 +338,38 @@ public class Main {
 		
 		int maxK = 10;
 		
-		double[] totalScore = new double[maxK];
+		double[] totalScore = new double[15];
+		int scoreIndex = 0;
 		for(int i=1;i<=maxK;i++) {
 			pw.print(i);
 			Value v = new Value();
+			scoreIndex = 0;
 			
 			t.Evaluate_Early("EarlyFusion", result, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[0] += v.pk; totalScore[1] += v.sk;
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			t.Evaluate_Early("FB", fbResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[2] += v.pk; totalScore[3] += v.sk;
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			t.Evaluate_Early("LI", linkedinResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[4] += v.pk; totalScore[5] += v.sk;
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			t.Evaluate_Early("TW", twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[6] += v.pk; totalScore[7] += v.sk;
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[8] += v.pk; totalScore[9] += v.sk;
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			pw.println();
 			pw.flush();
 		}
 		pw.print("Ave");
-		for(int i=0;i<10;i++) {
+		for(int i=0;i<15;i++) {
 			pw.print("\t"+String.format( "%.3f", totalScore[i]/(double)maxK ));
 		}
 		pw.println();
@@ -365,4 +381,5 @@ public class Main {
 class Value {
 	double pk = 0.0;
 	double sk = 0.0;
+	double rk = 0.0;
 }
