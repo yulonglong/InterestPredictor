@@ -21,7 +21,7 @@ public class GlobalHelper {
 	public static final String pathToProcessedFacebook = "./dataset/Processed/Facebook";
 	public static final String pathToSVMData = "./dataset/Processed/SVM_Data";
 	
-	public static final int numTopicsLDA = 100;
-	public static final int numIterationsLDA = 100;
-	public static final int numOptimizeIntervalLDA = 10;
+	public static final int numTopicsLDA = 40;
+	public static final int numIterationsLDA = 500;
+	public static final int numOptimizeIntervalLDA = 5;
 }

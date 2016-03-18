@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.io.*;
 
 import Jama.Matrix;
 import Utility.IO;
@@ -29,8 +30,8 @@ public class Main {
 		double[][] gnd_valid = TTest.ReadMx(this.relativePath + "gnd_test.csv");
 		for (int n = 0; n < gnd_valid.length; n++) {
 			Hashtable<Integer, Boolean> intrest = new Hashtable<Integer, Boolean>();
-			for (int r = 0; r < gnd_valid[0].length; r++) {
-				if (gnd_valid[n][r] == 1)
+			for (int r = 0; r < gnd_valid[n].length; r++) {
+				if (gnd_valid[n][r] > 0.99)
 					intrest.put(r, true);
 			}
 			TRU.add(intrest);
@@ -116,7 +117,7 @@ public class Main {
 	}
 
 	public void Evaluate_Late2(double[][] mx1, double[][] mx2, double[][] mx3, int k,
-			ArrayList<Hashtable<Integer, Boolean>> truth) {
+			ArrayList<Hashtable<Integer, Boolean>> truth, Value v) {
 		double l1 = 0.5;
 		double l2 = 0.3;
 		double l3 = 0.9;
@@ -148,14 +149,14 @@ public class Main {
 				acc_sk += 1.0;
 			}
 		}
-		Value v = new Value();
+//		Value v = new Value();
 		v.pk = acc_pk / sum_pk;
 		v.sk = acc_sk / sum_sk;
-		System.out.println("P@" + k + "\t" + v.pk);
-		System.out.println("S@" + k + "\t" + v.sk);
+//		System.out.println("P@" + k + "\t" + v.pk);
+//		System.out.println("S@" + k + "\t" + v.sk);
 	}
 
-	public void Evaluate_Early(double[][] mx, int k, ArrayList<Hashtable<Integer, Boolean>> truth) {
+	public void Evaluate_Early(double[][] mx, int k, ArrayList<Hashtable<Integer, Boolean>> truth,Value v) {
 		double sum_sk = 0.0;
 		double sum_pk = 0.0;
 		double acc_sk = 0.0;
@@ -165,7 +166,7 @@ public class Main {
 			sum_sk += 1.0;
 			sum_pk += k;
 			double[] row = mx[n];
-//			System.out.println(Arrays.toString(row));
+//			System.out.println("Test probability row " + n + " : " + Arrays.toString(row));
 			int[] list = rk.rank(row);
 			Hashtable<Integer, Boolean> interest = truth.get(n);
 			boolean flag = false;
@@ -179,11 +180,11 @@ public class Main {
 				acc_sk += 1.0;
 			}
 		}
-		Value v = new Value();
+//		Value v = new Value();
 		v.pk = acc_pk / sum_pk;
 		v.sk = acc_sk / sum_sk;
-		System.out.println("P@" + k + "\t" + v.pk);
-		System.out.println("S@" + k + "\t" + v.sk);
+//		System.out.println("P@" + k + "\t" + v.pk);
+//		System.out.println("S@" + k + "\t" + v.sk);
 	}
 
 	public double[][] SVM_Early_Process() throws IOException {
@@ -259,6 +260,7 @@ public class Main {
 			String line = content.get(i);
 			String[] terms = line.split(",");
 			svm_node[] pi = new svm_node[terms.length];
+			
 			for (int j = 0; j < terms.length; j++) {
 				svm_node pij = new svm_node();
 				pij.index = j;
@@ -315,36 +317,33 @@ public class Main {
 		Misc.Main.processLinkedIn(false);
 		Misc.Main.processFacebook(false);
 		
+		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
+		pw.println("K\tEarly-P\tEarly-S\tFB-P\tFB-S\tLI-P\tLI-S\tTW-P\tTW-S\tLate-P\tLate-S");
+		
 		Main t = new Main();
 		
 		double[][] result = t.SVM_Early_Process();
-		System.out.println("Early Fusion Result:");
-		for(int i=1;i<=10;i++) {
-			t.Evaluate_Early(result, i, t.TRU);
-		 }
-
+		double[][] fbResult = t.SVM_Late_Process("facebook");
+		double[][] linkedinResult = t.SVM_Late_Process("linkedin");
+		double[][] twitterResult = t.SVM_Late_Process("twitter");
 		
-		 double[][] fbResult = t.SVM_Late_Process("facebook");
-		 System.out.println("Facebook Result:");
-		 for(int i=1;i<=10;i++) {
-			t.Evaluate_Early(fbResult, i, t.TRU);
-		 }
-		 double[][] linkedinResult = t.SVM_Late_Process("linkedin");
-		 System.out.println("LinkedIn Result:");
-		 for(int i=1;i<=10;i++) {
-			t.Evaluate_Early(linkedinResult, i, t.TRU);
-		 }
-		 double[][] twitterResult = t.SVM_Late_Process("twitter");
-		 System.out.println("Twitter Result:");
-		 for(int i=1;i<=10;i++) {
-			t.Evaluate_Early(twitterResult, i, t.TRU);
-		 }
-		 
-		 System.out.println("Late Fusion Result:");
-		 for(int i=1;i<=10;i++) {
-			t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, i, t.TRU);
-		 }
-
+		for(int i=1;i<=10;i++) {
+			pw.print(i);
+			Value v = new Value();
+			t.Evaluate_Early(result, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
+			t.Evaluate_Early(fbResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
+			t.Evaluate_Early(linkedinResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
+			t.Evaluate_Early(twitterResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
+			t.Evaluate_Late2(fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.sk ));
+			pw.println();
+			pw.flush();
+		}
+		pw.close();
 	}
 }
 
