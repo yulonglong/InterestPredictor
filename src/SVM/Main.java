@@ -127,13 +127,13 @@ public class Main {
 			param.svm_type = svm_parameter.C_SVC;
 			param.kernel_type = svm_parameter.RBF;
 			param.degree = 3;
-			param.gamma = 0.5; 
+			param.gamma = 0.05; 
 			param.nu = 0.5;
 			param.cache_size = 1000;
 			param.C = 1;
-			param.eps = 1e-5;
+			param.eps = 1e-6;
 			param.p = 0.1;
-			param.shrinking = 1;
+			param.shrinking = 0;
 			param.probability = 1;
 			param.nr_weight = 0;
 	
@@ -356,9 +356,9 @@ public class Main {
 			Value v = new Value();
 			scoreIndex = 0;
 			
-			t.Evaluate_Early("EarlyFusion", result, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+//			t.Evaluate_Early("EarlyFusion", result, i, t.TRU, v);
+//			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+//			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			t.Evaluate_Early("FB", fbResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
@@ -378,21 +378,21 @@ public class Main {
 			// 456.958, -0.3788, -5.83058
 			// 886.970, -0.2734, -13.7735
 			
-			t.Evaluate_Late2(1053.411, -0.6880, -2.2708, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
-
-			t.Evaluate_Late2(786.020, -0.0046, -0.2845, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
-			
-			t.Evaluate_Late2(456.958, -0.3788, -5.83058, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
-			
-			t.Evaluate_Late2(886.970, -0.2734, -13.7735, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
-			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
-			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+//			t.Evaluate_Late2(1053.411, -0.6880, -2.2708, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+//			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+//			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+//
+//			t.Evaluate_Late2(786.020, -0.0046, -0.2845, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+//			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+//			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+//			
+//			t.Evaluate_Late2(456.958, -0.3788, -5.83058, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+//			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+//			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
+//			
+//			t.Evaluate_Late2(886.970, -0.2734, -13.7735, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+//			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
+//			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 
 //			GeneticAlgorithm ga = new GeneticAlgorithm(fbResult,linkedinResult, twitterResult, t.TRU);
 //			ga.runGA();

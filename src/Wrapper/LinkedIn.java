@@ -41,13 +41,13 @@ public class LinkedIn {
 	
 	public String getText() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(current+"\n");
+//		sb.append(current+"\n");
 		sb.append(summary+"\n");
 		for(int i=0;i<skills.size();i++) sb.append(skills.get(i)+"\n");
-		sb.append(currentExperience+"\n");
-		for(int i=0;i<pastExperiences.size();i++) sb.append(pastExperiences.get(i)+"\n");
-		for(int i=0;i<honors.size();i++) sb.append(honors.get(i)+"\n");
-		for(int i=0;i<organisations.size();i++) sb.append(organisations.get(i)+"\n");
+//		sb.append(currentExperience+"\n");
+//		for(int i=0;i<pastExperiences.size();i++) sb.append(pastExperiences.get(i)+"\n");
+//		for(int i=0;i<honors.size();i++) sb.append(honors.get(i)+"\n");
+//		for(int i=0;i<organisations.size();i++) sb.append(organisations.get(i)+"\n");
 		for(int i=0;i<interests.size();i++) sb.append(interests.get(i)+"\n");
 		return sb.toString().replaceAll("null\n", "");
 	}

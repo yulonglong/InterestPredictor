@@ -40,7 +40,7 @@ public class Main {
 		"./"+source,
 		"--output",
 		source+"_processed.mallet",
-//		"--keep-sequence",
+		"--keep-sequence",
 //		"--keep-sequence-bigrams",
 		"--remove-stopwords"};
 		// System.out.println(Arrays.toString(commandTrain));
