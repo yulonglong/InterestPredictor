@@ -23,7 +23,7 @@ public class GlobalHelper {
 	
 	public static final int numClasses = 20;
 	
-	public static final int numTopicsLDA = 50;
+	public static final int numTopicsLDA = 100;
 	public static final int numIterationsLDA = 200;
 	public static final int numOptimizeIntervalLDA = 10;
 }

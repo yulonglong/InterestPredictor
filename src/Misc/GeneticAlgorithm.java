@@ -210,14 +210,14 @@ public class GeneticAlgorithm {
 			generateRandomGenes(geneList);
 			for (Gene currGene : geneList) {
 				currGene.f1score = runTestGA(currGene);
-				System.out.println(currGene.w[0] + "--" + currGene.w[1] + "--" + currGene.w[2]);
+				System.out.println(currGene.w[0] + ", " + currGene.w[1] + ", " + currGene.w[2]);
 				System.out.println("Mean f1-Score : " + currGene.f1score);
 
 			}
 			geneList.sort(new GeneComparator());
 			for (int z = 0; z < bestNGenes; z++) {
 				Gene currGene = geneList.get(z);
-				System.err.println(currGene.w[0] + "--" + currGene.w[1] + "--" + currGene.w[2]);
+				System.err.println(currGene.w[0] + ", " + currGene.w[1] + ", " + currGene.w[2]);
 				System.err.println("Mean f1-Score : " + currGene.f1score);
 			}
 		}
