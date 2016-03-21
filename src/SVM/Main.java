@@ -331,9 +331,12 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		Misc.Main.folderCheck();
-		Misc.Main.processTwitter(false);
-		Misc.Main.processLinkedIn(false);
-		Misc.Main.processFacebook(false);
+		Misc.Main.processTwitter(true);
+		Misc.Main.processLinkedIn(true);
+		Misc.Main.processFacebook(true);
+		
+		// Turn off random seed
+		svm.rand.setSeed(0);
 		
 		PrintWriter pw = new PrintWriter(GlobalHelper.pathToProcessed+"/result_log.txt");
 		pw.println("K\tEarly-P\tEarly-R\tEarly-S\tFB-P\tFB-R\tFB-S\tLI-P\tLI-R\tLI-S\tTW-P\tTW-R\tTW-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S\tLate-P\tLate-R\tLate-S");
@@ -371,24 +374,24 @@ public class Main {
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
 			// BestWeights
-			// 211.680, 281.965, 840.157
-			// 146.360, 503.788, 648.682
-			// 12.011, 821.719, 808.191
-			// 297.944, 920.055, 121.308
+			// 24.753, 695.971, 141.733
+			// 25.392, 964.318, 285.489
+			// 37.385, 784.276, 224.330
+			// 3.470, 340.835, 129.659
 			
-			t.Evaluate_Late2(211.680, 281.965, 840.157, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			t.Evaluate_Late2(24.753, 695.971, 141.733, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 
-			t.Evaluate_Late2(146.360, 503.788, 648.682, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			t.Evaluate_Late2(25.392, 964.318, 285.489, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
-			t.Evaluate_Late2(12.011, 821.719, 808.191, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			t.Evaluate_Late2(37.385, 784.276, 224.330, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 			
-			t.Evaluate_Late2(716.934, 182.384, 1016.020, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
+			t.Evaluate_Late2(3.470, 340.835, 129.659, fbResult, linkedinResult, twitterResult, i, t.TRU, v);
 			pw.print("\t"+String.format( "%.3f", v.pk )+"\t"+String.format( "%.3f", v.rk )+"\t"+String.format( "%.3f", v.sk ));
 			totalScore[scoreIndex++] += v.pk; totalScore[scoreIndex++] += v.rk; totalScore[scoreIndex++] += v.sk;
 

@@ -49,7 +49,23 @@ public class LinkedIn {
 //		for(int i=0;i<honors.size();i++) sb.append(honors.get(i)+"\n");
 //		for(int i=0;i<organisations.size();i++) sb.append(organisations.get(i)+"\n");
 		for(int i=0;i<interests.size();i++) sb.append(interests.get(i)+"\n");
-		return sb.toString().replaceAll("null\n", "");
+		String text =  sb.toString().replaceAll("null\n", "");
+		
+		if (GlobalHelper.useBigram) {
+			sb = new StringBuilder(text+" ");
+			String[] lines = text.split("\n");
+			for(int i=0;i<lines.length;i++) {
+				String[] tokens = lines[i].split(" ");
+				for (int j=1;j<tokens.length;j++){
+					sb.append(tokens[j-1]+"_"+tokens[j]+" ");
+				}
+				sb.append("\n");
+			}
+			
+			text = sb.toString().trim();
+		}
+		
+		return text;
 	}
 
 	private void processLinkedinHtml() {

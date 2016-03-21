@@ -35,7 +35,7 @@ public class Tweet {
 		//get the origin tweet text from the tweet JsonObject
 		if(tweetJson.containsKey("text")){
 			String rawText = (tweetJson.getString("text"));
-			text = rawText.replaceAll("(?:(?:\\r\\n)|(?:\\r)|(?:\\n))+", " | ");
+			text = rawText.replaceAll("(?:(?:\\r\\n)|(?:\\r)|(?:\\n))+", "\n");
 			text =  text.replaceAll("\\t+", " ");
 			
 			// Ignore URL, replace with blank character
@@ -44,6 +44,20 @@ public class Tweet {
 			
 			urlRegex = "(?:http[s]?:\\/\\/t\\.co)";
 			text =  text.replaceAll(urlRegex, "");
+			
+			if (GlobalHelper.useBigram) {
+				StringBuilder sb = new StringBuilder(text+" ");
+				String[] lines = text.split("\n");
+				for(int i=0;i<lines.length;i++) {
+					String[] tokens = lines[i].split(" ");
+					for (int j=1;j<tokens.length;j++){
+						sb.append(tokens[j-1]+"_"+tokens[j]+" ");
+					}
+					sb.append("\n");
+				}
+				
+				text = sb.toString().trim();
+			}
 		}
 		else{
 			System.err.println("no text key in: " + profileId + " json!");

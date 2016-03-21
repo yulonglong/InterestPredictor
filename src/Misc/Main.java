@@ -41,7 +41,6 @@ public class Main {
 		"--output",
 		source+"_processed.mallet",
 		"--keep-sequence",
-//		"--keep-sequence-bigrams",
 		"--remove-stopwords"};
 		// System.out.println(Arrays.toString(commandTrain));
 		ExecuteCommandHelper.runExecutable(commandTrain, new File(GlobalHelper.pathToProcessed));
@@ -55,8 +54,6 @@ public class Main {
 		"train-topics",
 		"--input",
 		source+"_processed.mallet",
-//		"--use-ngrams",
-//		"true",
 		"--num-topics",
 		Integer.toString(GlobalHelper.numTopicsLDA),
 		"--num-iterations",

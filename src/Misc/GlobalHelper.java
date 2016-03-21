@@ -21,6 +21,8 @@ public class GlobalHelper {
 	public static final String pathToProcessedFacebook = "./dataset/Processed/Facebook";
 	public static final String pathToSVMData = "./dataset/Processed/SVM_Data";
 	
+	public static boolean useBigram = false;
+	
 	public static final int numClasses = 20;
 	
 	public static final int numTopicsLDA = 100;

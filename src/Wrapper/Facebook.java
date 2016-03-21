@@ -3,6 +3,7 @@ package Wrapper;
 import java.io.File;
 import java.io.IOException;
 
+import Misc.GlobalHelper;
 import Utility.FacebookFileReader;
 
 public class Facebook {
@@ -42,6 +43,20 @@ public class Facebook {
 			text = text.replaceAll("updated\\s+(?:(?:her)|(?:his))\\s+cover\\s+photo", "");
 			text = text.replaceAll("Share", "");
 			text = text.replaceAll("Remove", "");
+			
+			if (GlobalHelper.useBigram) {
+				StringBuilder sb = new StringBuilder(text+" ");
+				String[] lines = text.split("\n");
+				for(int i=0;i<lines.length;i++) {
+					String[] tokens = lines[i].split(" ");
+					for (int j=1;j<tokens.length;j++){
+						sb.append(tokens[j-1]+"_"+tokens[j]+" ");
+					}
+					sb.append("\n");
+				}
+				
+				text = sb.toString().trim();
+			}
 			
 		} catch (IOException e) {
 			System.err.println("Error while reading " + input.getName() + "facebook!");
