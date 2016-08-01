@@ -2,11 +2,13 @@ Interest Predictor
 ==================
 
 A machine learning program to predict user's interest based on 3 social media sources:
+
     - LinkedIn
     - Facebook
     - Twitter
 
 The interests are scoped to 20 interest:
+
     - reading
     - investing
     - advertising
